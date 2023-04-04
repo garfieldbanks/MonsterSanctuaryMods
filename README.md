@@ -13,11 +13,23 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Download and install [Visual Studio 2022 Community](https://visualstudio.microsoft.com/vs/community).
 - Choose the `.NET desktop environment` workload when installing or you can use the `Visual Studio Installer` to modify Visual Studio and add it afterwards. 
 - Open Visual Studio and add nuget sources `> Visual Studio > Tools > NuGet Package Manager > Package Manager Settings > Package Sources`:
-&ensp; `https://api.nuget.org/v3/index.json`
-&ensp; `https://nuget.bepinex.dev/v3/index.json`
+  - `https://api.nuget.org/v3/index.json`
+  - `https://nuget.bepinex.dev/v3/index.json`
 - Open `MonsterSanctuaryMods.sln`
 - Make sure the dropdown in Visual Studio is set to `Release` and not `Debug`.
 - Build the DLLs. There is a post-build event to copy the dll files to the BepInEx/plugins folder which you should probably create now if you haven't already.
+
+## Mods
+### CombatSpeed
+- Faster combat speeds available in the game options menu
+### Fly
+- Infinite jumping
+### FreeJump
+- Double jump from the beginning of the game
+### NewGamePlusMonsterAbilities
+- Use all monster explore abilities from the beginning of the game without the need to encounter it
+### NewGamePlusMonsterArmy
+- Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard)
 
 ## Credits
 I used the monster sanctuary mods of [Eradev](https://github.com/Eradev) and [EvaisaDev](https://github.com/EvaisaDev) as examples. Thank you!
