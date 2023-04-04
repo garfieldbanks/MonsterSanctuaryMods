@@ -4,7 +4,6 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using System.Linq;
 using UnityEngine;
-using static MonsterSelector;
 
 namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
 {

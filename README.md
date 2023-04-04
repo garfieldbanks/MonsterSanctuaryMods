@@ -30,6 +30,8 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Use all monster explore abilities from the beginning of the game without the need to encounter it
 ### NewGamePlusMonsterArmy
 - Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard)
+### MyTweaks
+- Unlimited gold and unlimited item use.
 
 ## Credits
 I used the monster sanctuary mods of [Eradev](https://github.com/Eradev) and [EvaisaDev](https://github.com/EvaisaDev) as examples. Thank you!
