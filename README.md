@@ -32,6 +32,8 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard)
 ### MyTweaks
 - Unlimited gold and unlimited item use.
+- Doors and sliders are initially open. The two doors necessary to trap the champion monster in the underworld can still be toggled open & closed. Everything else can only be opened (if installed mid playthrough), not closed. So feel free to interact with every switch you see to see if it triggers any events. Most of the time it will just do nothing because the door is already open.
+- Blob key is no longer necessary to interact with blob locks. You can still visit and duel Old Buran but it is no longer required.
 
 ## Credits
 I used the monster sanctuary mods of [Eradev](https://github.com/Eradev) and [EvaisaDev](https://github.com/EvaisaDev) as examples. Thank you!
