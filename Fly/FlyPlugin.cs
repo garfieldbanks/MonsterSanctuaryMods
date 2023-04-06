@@ -9,8 +9,6 @@ namespace garfieldbanks.MonsterSanctuary.Fly
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class FlyPlugin : BaseUnityPlugin
     {
-        private static ManualLogSource _log;
-
         [UsedImplicitly]
         private void Awake()
         {

@@ -10,8 +10,6 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class NewGamePlusMonsterArmyPlugin : BaseUnityPlugin
     {
-        private static ManualLogSource _log;
-
         [UsedImplicitly]
         private void Awake()
         {
@@ -24,7 +22,7 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
         private class MonsterCanDonateMonsterPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(ref Monster __instance, ref bool __result, bool isMonsterArmy = false)
+            private static bool Prefix(ref Monster __instance, ref bool __result)
             {
                 if (__instance.GetComponent<MonsterFamiliar>() != null)
                 {

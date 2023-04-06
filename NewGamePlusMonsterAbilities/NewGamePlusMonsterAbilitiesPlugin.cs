@@ -10,8 +10,6 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterAbilities
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class NewGamePlusMonsterAbilitiesPlugin : BaseUnityPlugin
     {
-        private static ManualLogSource _log;
-
         [UsedImplicitly]
         private void Awake()
         {

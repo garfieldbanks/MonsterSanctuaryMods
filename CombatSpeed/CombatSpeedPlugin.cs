@@ -9,8 +9,6 @@ namespace garfieldbanks.MonsterSanctuary.CombatSpeed
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class CombatSpeedPlugin : BaseUnityPlugin
     {
-        private static ManualLogSource _log;
-
         [UsedImplicitly]
         private void Awake()
         {

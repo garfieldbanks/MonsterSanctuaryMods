@@ -9,8 +9,6 @@ namespace garfieldbanks.MonsterSanctuary.FreeJump
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
     public class FreeJumpPlugin : BaseUnityPlugin
     {
-        private static ManualLogSource _log;
-
         [UsedImplicitly]
         private void Awake()
         {
