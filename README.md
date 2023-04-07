@@ -21,19 +21,30 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 
 ## Mods
 ### CombatSpeed
-- Faster combat speeds available in the game options menu
+- Faster combat speeds available in the game options menu.
 ### Fly
-- Infinite jumping
+- Infinite jumping.
 ### FreeJump
-- Double jump from the beginning of the game
+- Double jump from the beginning of the game.
 ### NewGamePlusMonsterAbilities
-- Use all monster explore abilities from the beginning of the game without the need to encounter it
+- Use all monster explore abilities from the beginning of the game without the need to encounter it.
 ### NewGamePlusMonsterArmy
-- Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard)
+- Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard).
+### LuckyRandomizer
+- Based on the randomizer mod by eradev.
+- Fixes the issue of the original mod which prevented blog burg chambers from opening.
+- Fixes the issue of the original mod which prevented certain essential items from being received.
+- The items in chests are randomly selected from items you don't already have. Once you have all items, chests contain items with the lowest quantity in your inventory.
 ### MyTweaks
 - Unlimited gold and unlimited item use.
 - Doors and sliders are initially open. The two doors necessary to trap the champion monster in the underworld can still be toggled open & closed. Everything else can only be opened (if installed mid playthrough), not closed. So feel free to interact with every switch you see to see if it triggers any events. Most of the time it will just do nothing because the door is already open.
 - Blob key is no longer necessary to interact with blob locks. You can still visit and duel Old Buran but it is no longer required.
+- Magical vines automatically open without needing to use a monster ability.
+- Invisible platforms are always visible and tangible.
+- All mounts are tar mounts.
+- All flying monsters can now also swim.
+- All swimming monsters now resist streams.
+- You can see in darkness normally. But when you switch to a light or sonar monster it uses their ability instead.
 
 ## Credits
-I used the monster sanctuary mods of [Eradev](https://github.com/Eradev) and [EvaisaDev](https://github.com/EvaisaDev) as examples. Thank you!
+I used the monster sanctuary mods of [eradev](https://github.com/Eradev) and [evaisadev](https://github.com/EvaisaDev) as examples. Thank you!
