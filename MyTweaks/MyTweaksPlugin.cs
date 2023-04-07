@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using UnityEngine;
 using static UnityEngine.ParticleSystem;
 
@@ -23,6 +24,17 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+        }
+
+        [HarmonyPatch(typeof(LevelBadge), "CanBeUsedOnMonster")]
+        private class LevelBadgeCanBeUsedOnMonsterPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref Monster monster, ref bool __result)
+            {
+                __result = monster.Level < PlayerController.Instance.Monsters.GetHighestLevel();
+                return false;
+            }
         }
 
         [HarmonyPatch(typeof(PlayerSummary), "UpdateData")]
@@ -147,7 +159,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         }
 
         [HarmonyPatch(typeof(PlayerFollower), "CanUseAction")]
-        private class PlayerFollowerSetVisiblePatch
+        private class PlayerFollowerCanUseActionPatch
         {
             [UsedImplicitly]
             private static bool Prefix()
