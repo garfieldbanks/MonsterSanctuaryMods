@@ -46,6 +46,10 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - All flying monsters can now also swim.
 - All swimming monsters now resist streams.
 - You can see in darkness normally. But when you switch to a light or sonar monster it uses their ability instead.
+- Skills can now be unlearned the same way you learn them. Just press/click the icon and the skill will be unlearned.
+- No more prerequisites or level requirements for skills.
+- Skill points can now go negative. Everything is saved and loaded properly so you can always unlearn skills later to get back to 0.
+- Ultimates can now be chosen at any level. Ultimate mana cost is pretty high so you probably won't be able to make use of them until you get mana passives/food/weapons/accessories.
 
 ## Credits
 I used the monster sanctuary mods of [eradev](https://github.com/Eradev) and [evaisadev](https://github.com/EvaisaDev) as examples. Thank you!

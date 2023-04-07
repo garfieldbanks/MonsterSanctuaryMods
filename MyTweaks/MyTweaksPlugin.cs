@@ -2,6 +2,10 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using JetBrains.Annotations;
+using MonoMod.RuntimeDetour;
+using MonoMod.Utils;
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +19,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
     public class MyTweaksPlugin : BaseUnityPlugin
     {
         private static ManualLogSource _log;
+        private static bool tempBool;
+        private static int tempInt;
 
         [UsedImplicitly]
         private void Awake()
@@ -24,6 +30,176 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+        }
+
+        [HarmonyPatch(typeof(Monster), "CheckMonsterValidity")]
+        private class MonsterCheckMonsterValidityPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref bool __result)
+            {
+                __result = true;
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(MultiplayerController), "AreMonstersValid")]
+        private class MultiplayerControllerAreMonstersValidPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref bool __result)
+            {
+                __result = true;
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillManager), "LoadSkillData")]
+        private class SkillManagerLoadSkillDataPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref SkillManager __instance, ref List<int> actions, ref List<int> parentActions, ref List<PassiveSkillEntry> passives)
+            {
+                __instance.Actions.Clear();
+                __instance.ParentActions.Clear();
+                __instance.Passives.Clear();
+
+                foreach (GameObject baseSkill in __instance.BaseSkills)
+                {
+                    PassiveSkill component = baseSkill.GetComponent<PassiveSkill>();
+                    if (component != null)
+                    {
+                        __instance.Passives.Add(component);
+                    }
+                }
+
+                FieldInfo monster = __instance.GetType().GetField("monster", BindingFlags.NonPublic | BindingFlags.Instance);
+                int actualLevel = ((Monster)monster.GetValue(__instance)).Level;
+                ((Monster)monster.GetValue(__instance)).Level = 99;
+
+                MethodInfo LearnPassiveFromSavegame = __instance.GetType().GetMethod("LearnPassiveFromSavegame", BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (PassiveSkillEntry passife in passives)
+                {
+                    LearnPassiveFromSavegame.Invoke(__instance, new object[] { passife });
+                }
+
+                MethodInfo LearnActiveFromSavegame = __instance.GetType().GetMethod("LearnActiveFromSavegame", BindingFlags.NonPublic | BindingFlags.Instance);
+                foreach (int action2 in actions)
+                {
+                    LearnActiveFromSavegame.Invoke(__instance, new object[] { __instance.Actions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(action2) });
+                }
+
+                foreach (int parentAction in parentActions)
+                {
+                    LearnActiveFromSavegame.Invoke(__instance, new object[] { __instance.ParentActions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(parentAction) });
+                }
+
+                ((Monster)monster.GetValue(__instance)).Level = actualLevel;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillMenu), "SelectMonster")]
+        private class SkillMenuSelectMonsterPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix()
+            {
+                tempBool = PlayerController.Instance.NewGamePlus;
+                PlayerController.Instance.NewGamePlus = true;
+                return true;
+            }
+
+            [UsedImplicitly]
+            private static void Postfix()
+            {
+                PlayerController.Instance.NewGamePlus = tempBool;
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillManager), "ValidateSkillTree")]
+        private class SkillManagerValidateSkillTreePatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix()
+            {
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillTreeIcon), "GetRequiredLevel")]
+        private class SkillTreeIconGetRequiredLevelPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref int __result)
+            {
+                __result = 0;
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillTreeIcon), "SetSkill")]
+        private class SkillTreeIconSetSkillPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref bool isLearnable)
+            {
+                isLearnable = true;
+                return true;
+            }
+
+            [UsedImplicitly]
+            private static void Postfix(ref SkillTreeIcon __instance)
+            {
+                __instance.UpperConnector.gameObject.SetActive(false);
+                __instance.HorizontalConnector.gameObject.SetActive(false);
+                __instance.LowerConnector.gameObject.SetActive(false);
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillMenu), "TryToLearnSkill")]
+        private class SkillMenuTryToLearnSkillPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref SkillMenu __instance)
+            {
+                FieldInfo CurrentSelected = __instance.GetType().GetField("CurrentSelected", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo monster = __instance.GetType().GetField("monster", BindingFlags.NonPublic | BindingFlags.Instance);
+                if ((ISelectionViewSelectable)CurrentSelected.GetValue(__instance) is SkillTreeIcon)
+                {
+                    SkillTreeIcon skillTreeIcon = (SkillTreeIcon)CurrentSelected.GetValue(__instance);
+                    if (skillTreeIcon.Skill.Skill == null)
+                    {
+                        GameController.Instance.SFX.PlaySFX(GameController.Instance.SFX.SFXMenuCancel);
+                    }
+                    else if (skillTreeIcon.Skill.Learned)
+                    {
+                        ((Monster)monster.GetValue(__instance)).SkillManager.UnlearnSkill(skillTreeIcon.Skill);
+                        ((SkillTreeIcon)CurrentSelected.GetValue(__instance)).UpdateColor();
+                        ((Monster)monster.GetValue(__instance)).CalculateCurrentStats();
+                        MethodInfo UpdateSkillpoints = __instance.GetType().GetMethod("UpdateSkillpoints", BindingFlags.NonPublic | BindingFlags.Instance);
+                        UpdateSkillpoints.Invoke(__instance, new object[] { });
+                        MethodInfo UpdateStats = __instance.GetType().GetMethod("UpdateStats", BindingFlags.NonPublic | BindingFlags.Instance);
+                        UpdateStats.Invoke(__instance, new object[] { });
+                    }
+                    else
+                    {
+                        MethodInfo LearnSkill = __instance.GetType().GetMethod("LearnSkill", BindingFlags.NonPublic | BindingFlags.Instance);
+                        LearnSkill.Invoke(__instance, new object[] { });
+                    }
+                }
+                else if ((ISelectionViewSelectable)CurrentSelected.GetValue(__instance) is UltimateIcon)
+                {
+                    ((Monster)monster.GetValue(__instance)).SkillManager.SetUltimate(((UltimateIcon)CurrentSelected.GetValue(__instance)).Skill.gameObject);
+                    foreach (UltimateIcon ultimate in __instance.Ultimates)
+                    {
+                        ultimate.SetSelected(isSelected: false);
+                    }
+                    ((UltimateIcon)CurrentSelected.GetValue(__instance)).SetSelected(isSelected: true);
+                }
+                return false;
+            }
         }
 
         [HarmonyPatch(typeof(LevelBadge), "CanBeUsedOnMonster")]
