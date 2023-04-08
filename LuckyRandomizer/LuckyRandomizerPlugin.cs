@@ -238,6 +238,26 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
             int lowestQuantity = 999999999;
             GameObject lowest = null;
             int variation = 0;
+            if (!_disableEggs.Value)
+            {
+                foreach (InventoryItem item in PlayerController.Instance.Inventory.Eggs)
+                {
+                    if (item.Quantity < lowestQuantity)
+                    {
+                        lowest = item.Item.gameObject;
+                        lowestQuantity = item.Quantity;
+                        variation = item.Variation;
+                    }
+                }
+            }
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.CraftMaterials)
+            {
+                if (item.Quantity < lowestQuantity)
+                {
+                    lowest = item.Item.gameObject;
+                    lowestQuantity = item.Quantity;
+                }
+            }
             foreach (InventoryItem item in PlayerController.Instance.Inventory.Weapons)
             {
                 if (!char.IsDigit(item.GetName().Last()) && item.Quantity < lowestQuantity)
@@ -267,7 +287,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
             }
             foreach (InventoryItem item in PlayerController.Instance.Inventory.Consumables)
             {
-                if (!item.GetName().Contains("Level Badge") && item.Quantity < lowestQuantity)
+                if (!item.GetName().Contains("Reward Box") && !item.GetName().Contains("Level Badge") && item.Quantity < lowestQuantity)
                 {
                     lowest = item.Item.gameObject;
                     lowestQuantity = item.Quantity;
@@ -279,26 +299,6 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                 {
                     lowest = item.Item.gameObject;
                     lowestQuantity = item.Quantity;
-                }
-            }
-            foreach (InventoryItem item in PlayerController.Instance.Inventory.CraftMaterials)
-            {
-                if (item.Quantity < lowestQuantity)
-                {
-                    lowest = item.Item.gameObject;
-                    lowestQuantity = item.Quantity;
-                }
-            }
-            if (!_disableEggs.Value)
-            {
-                foreach (InventoryItem item in PlayerController.Instance.Inventory.Eggs)
-                {
-                    if (item.Quantity < lowestQuantity)
-                    {
-                        lowest = item.Item.gameObject;
-                        lowestQuantity = item.Quantity;
-                        variation = item.Variation;
-                    }
                 }
             }
             foreach (InventoryItem item in PlayerController.Instance.Inventory.Food)
@@ -346,7 +346,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
             }
             foreach (InventoryItem item in PlayerController.Instance.Inventory.CraftMaterials)
             {
-                if (item.Quantity >= 9)
+                if (item.Quantity >= 5)
                 {
                     craftMaterials.Add(item.Item.gameObject);
                 }
@@ -377,6 +377,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+1") && // remove +1 items
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+2") && // remove +2 items
                             !x.GetComponent<BaseItem>().GetName().Contains("Level Badge") && // remove level badges
+                            !x.GetComponent<BaseItem>().GetName().Contains("Reward Box") && // remove reward boxes
                             !blacklistedItems.Contains(x.GetComponent<BaseItem>().ID) &&  // Remove blacklisted items
                             x.GetComponent<KeyItem>() == null && // Remove Keys
                             x.GetComponent<UniqueItem>() == null && // Remove Unique items (ie. Costumes)
@@ -394,6 +395,8 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                 }
                 else if (item.GetComponent<Egg>() == null)
                 {
+                    // add it twice to counteract the odds of getting an egg
+                    _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
                     _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
                 }
             }
