@@ -42,7 +42,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Blob key is no longer necessary to interact with blob locks. You can still visit and duel Old Buran but it is no longer required.
 - Magical vines automatically open without needing to use a monster ability.
 - Invisible platforms are always visible and tangible.
-- All mounts are tar mounts.
+- All mounts are tar mounts and have increased jump height like Gryphonix.
 - All flying monsters have improved flying and swimming.
 - All swimming monsters now resist streams.
 - You can see in darkness normally. But when you switch to a light or sonar monster it uses their ability instead.
@@ -50,6 +50,8 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - No more prerequisites or level requirements for skills.
 - Skill points can now go negative. Everything is saved and loaded properly so you can always unlearn skills later to get back to 0.
 - Ultimates can now be chosen at any level. Ultimate mana cost is pretty high so you probably won't be able to make use of them until you get mana passives/food/weapons/accessories.
+- Diamond blocks, levitatable blocks, green vines and melody walls are removed.
+- Torches are initialized enkindled.
 
 ## Credits
 I used the monster sanctuary mods of [eradev](https://github.com/Eradev) and [evaisadev](https://github.com/EvaisaDev) as examples. Thank you!
