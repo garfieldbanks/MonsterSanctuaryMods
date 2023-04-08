@@ -10,7 +10,10 @@ using System.Data;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Timers;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using static PhysicalObject;
 using static UnityEngine.ParticleSystem;
 
 namespace garfieldbanks.MonsterSanctuary.MyTweaks
@@ -20,7 +23,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
     {
         private static ManualLogSource _log;
         private static bool tempBool;
-        private static int tempInt;
 
         [UsedImplicitly]
         private void Awake()
@@ -240,7 +242,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BoolSwitchDoor __instance)
             {
-                //_log.LogDebug($"BoolSwitchName: {__instance.BoolSwitchName}");
                 if (__instance.BoolSwitchName != null && __instance.BoolSwitchName != "UWW3SlidingGate" && __instance.BoolSwitchName != "UWW4SlidingGate")
                 {
                     __instance.IsOpenInitially = true;
@@ -250,7 +251,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                         MethodInfo UpdateState = __instance.GetType().GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
                         UpdateState.Invoke(__instance, new object[] { true });
                     }
-
+                    PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
                     return false;
                 }
                 return true;
@@ -263,7 +264,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BoolSwitchDoor __instance)
             {
-                //_log.LogDebug($"BoolSwitchName: {__instance.BoolSwitchName}");
                 if (__instance.BoolSwitchName != null && __instance.BoolSwitchName != "UWW3SlidingGate" && __instance.BoolSwitchName != "UWW4SlidingGate")
                 {
                     FieldInfo IsOpen = __instance.GetType().GetField("IsOpen", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -272,7 +272,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                         MethodInfo UpdateState = __instance.GetType().GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
                         UpdateState.Invoke(__instance, new object[] { true });
                     }
-
+                    PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
                     return false;
                 }
                 return true;
@@ -305,6 +305,59 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        [HarmonyPatch(typeof(Obstacle), "Start")]
+        private class ObstacleStartPatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref Obstacle __instance)
+            {
+                MethodInfo FinishAnimation = __instance.GetType().GetMethod("FinishAnimation", BindingFlags.NonPublic | BindingFlags.Instance);
+                FinishAnimation.Invoke(__instance, new object[] { });
+            }
+        }
+
+        [HarmonyPatch(typeof(LevitatableObject), "Update")]
+        private class LevitatableObjectUpdatePatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref LevitatableObject __instance)
+            {
+                PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                __instance.IsLevitated = true;
+            }
+        }
+
+        [HarmonyPatch(typeof(ObstacleTendrils), "Awake")]
+        private class ObstacleTendrilsAwakePatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref ObstacleTendrils __instance)
+            {
+                MethodInfo Disappear = __instance.GetType().GetMethod("Disappear", BindingFlags.NonPublic | BindingFlags.Instance);
+                Disappear.Invoke(__instance, new object[] { });
+            }
+        }
+
+        [HarmonyPatch(typeof(Torch), "Start")]
+        private class TorchStartPatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref Torch __instance)
+            {
+                __instance.TriggeredByAttack(null);
+            }
+        }
+
+        [HarmonyPatch(typeof(MelodyWall), "Start")]
+        private class MelodyWallStartPatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref MelodyWall __instance)
+            {
+                __instance.DestroyObstacle();
+            }
+        }
+
         [HarmonyPatch(typeof(InvisiblePlatform), "Update")]
         private class InvisiblePlatformUpdatePatch
         {
@@ -329,6 +382,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 if (component != null)
                 {
                     component.TarMount = true;
+                    component.IncreasedJumpHeight = true;
+
                 }
                 return true;
             }
@@ -387,34 +442,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 MountAbility component3 = PlayerController.Instance.Follower.Monster.ExploreAction.GetComponent<MountAbility>();
                 if (component2 == null && component3 == null || component3 != null && !component3.SonarMount)
                 {
-                    //MethodInfo LightenArea = __instance.GetType().GetMethod("LightenArea", BindingFlags.NonPublic | BindingFlags.Instance);
-
-                    // Light:
-                    //LightenArea.Invoke(__instance, new object[] { PlayerController.Instance.Follower.transform.position, 17, 2, 1f, __instance.LightColor, false });
-
-                    // Sonar:
-                    //LightenArea.Invoke(__instance, new object[] { PlayerController.Instance.Follower.transform.position, 16, 8, 1f, (Color) new Color32(255, 0, 1, 0), true });
                     return false;
                 }
-                //else if (component2 != null)
-                //{
-                //    _log.LogDebug($"Name: {PlayerController.Instance.Follower.Monster.GetName()}");
-                //    _log.LogDebug($"component2.TotalRadius: {component2.TotalRadius}");
-                //    _log.LogDebug($"component2.FalloffRadius: {component2.FalloffRadius}");
-                //    _log.LogDebug($"__instance.LightColor: {__instance.LightColor}");
-                //    _log.LogDebug($"component2.Color: {component2.Color}");
-                //    _log.LogDebug($"__instance.LightColor * component2.Color: {__instance.LightColor * component2.Color}");
-                //    _log.LogDebug($"component2.OnlyApplyOnDarkAreas: {component2.OnlyApplyOnDarkAreas}");
-                //}
-                //else if (component3 != null && component3.SonarMount)
-                //{
-                //    _log.LogDebug($"Name: {PlayerController.Instance.Follower.Monster.GetName()}");
-                //    _log.LogDebug($"component3.SonarTotalRadius: {component3.SonarTotalRadius}");
-                //    _log.LogDebug($"component3.SonarFalloffRadius: {component3.SonarFalloffRadius}");
-                //    _log.LogDebug($"__instance.LightColor: {__instance.LightColor}");
-                //    _log.LogDebug($"component3.Color: {component3.SonarColor}");
-                //    _log.LogDebug($"__instance.LightColor * component3.Color: {__instance.LightColor * component3.SonarColor}");
-                //}
                 return true;
             }
         }
