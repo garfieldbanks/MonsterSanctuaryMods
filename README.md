@@ -4,7 +4,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ## Installation
 - Requires [BepInEx 5](https://github.com/BepInEx/BepInEx).
 - Place the unzipped contents of `BepInEx_____5._._._.zip` directly into the base game folder.
-- Create a plugins folder inside the BepInEx folder and put all mods (dll files) there.
+- Create a plugins folder inside the BepInEx folder and put all mods (DLL files) there.
 
 ## Compilation
 - Clone the repository using git.
@@ -17,7 +17,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
   - `https://nuget.bepinex.dev/v3/index.json`
 - Open `MonsterSanctuaryMods.sln`
 - Make sure the dropdown in Visual Studio is set to `Release` and not `Debug`.
-- Build the DLLs. There is a post-build event to copy the dll files to the BepInEx/plugins folder which you should probably create now if you haven't already.
+- Build the DLLs > right click solution or individual project and click build. There is a post-build event to copy the dll files to the `BepInEx/plugins` folder which you should probably create now if you haven't already.
 
 ## Mods
 ### CombatSpeed
@@ -43,7 +43,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Magical vines automatically open without needing to use a monster ability.
 - Invisible platforms are always visible and tangible.
 - All mounts are tar mounts.
-- All flying monsters can now also swim.
+- All flying monsters have improved flying and swimming.
 - All swimming monsters now resist streams.
 - You can see in darkness normally. But when you switch to a light or sonar monster it uses their ability instead.
 - Skills can now be unlearned the same way you learn them. Just press/click the icon and the skill will be unlearned.

@@ -334,6 +334,18 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        [HarmonyPatch(typeof(FlyingAbility), "StartAction")]
+        private class FlyingAbilityStartActionPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref FlyingAbility __instance)
+            {
+                __instance.FlyDuration = 0.76f;
+                __instance.LiftVelocity = 71;
+                return true;
+            }
+        }
+
         [HarmonyPatch(typeof(PlayerFollower), "CanUseAction")]
         private class PlayerFollowerCanUseActionPatch
         {
