@@ -34,7 +34,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Based on the randomizer mod by eradev.
 - Fixes the issue of the original mod which prevented blog burg chambers from opening.
 - Fixes the issue of the original mod which prevented certain essential items from being received.
-- The items in chests are randomly selected from items you don't already have. Once you have all items, chests contain items with the lowest quantity in your inventory.
+- Rewards from monster battles and the items in chests are randomly selected from items you don't already have. Once you have all items, you'll receive items with the lowest quantity in your inventory.
 ### MyTweaks
 - Any level badge can be used to level any monster up to the same level as your current max level monster.
 - Unlimited gold and unlimited item use.

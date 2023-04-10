@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -520,86 +522,250 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                     _log.LogDebug($"Chest item GetName: {__instance.Item.GetComponent<BaseItem>().GetName()}");
                     _log.LogDebug($"Chest item GetType: {__instance.Item.GetComponent<BaseItem>().GetType()}");
                     _log.LogDebug($"Chest item GetItemType: {__instance.Item.GetComponent<BaseItem>().GetItemType()}");
+                    if (__instance.Gold > 0)
+                    {
+                        _log.LogDebug($"Chest gold: {__instance.Gold}");
+                    }
                 }
-                else if (__instance.Gold == 0)
+
+                if (__instance.Item == null && __instance.Gold == 0)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Item is null and has no gold");
-
-                    return;
                 }
-                else
-                {
-                    _log.LogDebug($"Chest gold: {__instance.Gold}");
-                }
-
-                if (__instance.BraveryChest)
+                else if (__instance.BraveryChest)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Bravery chest");
-
-                    return;
                 }
-
-                if (__instance.Item != null && __instance.Item.GetComponent<KeyItem>() != null)
+                else if (__instance.Item != null && __instance.Item.GetComponent<KeyItem>() != null)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Key chest");
-
-                    return;
                 }
-
-                if (__instance.Item != null && __instance.Item.GetComponent<BaseItem>().GetName().ToLower().Contains("key"))
+                else if (__instance.Item != null && __instance.Item.GetComponent<BaseItem>().GetName().ToLower().Contains("key"))
                 {
                     _log.LogDebug("ChestRandomizer ignore: Item name contains key");
-
-                    return;
                 }
-
-                if (__instance.Item != null && __instance.Item.GetComponent<UniqueItem>() != null)
+                else if (__instance.Item != null && __instance.Item.GetComponent<UniqueItem>() != null)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Unique item chest");
-
-                    return;
                 }
-
-                if (!_isEnabled.Value || !_randomizeChestsEnabled.Value)
+                else if (!_isEnabled.Value || !_randomizeChestsEnabled.Value)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Disabled in config");
-
-                    return;
-                }
-
-                _log.LogDebug("Randomizing chest content...");
-                _log.LogDebug($"    Before: {(__instance.Gold > 0 ? $"{__instance.Gold} Gold" : __instance.Item?.GetComponent<BaseItem>().GetName())}");
-
-                __instance.Item = null;
-                Tuple<GameObject, int> drop = null;
-
-                if (Rand.NextDouble() < _goldChance.Value)
-                {
-                    __instance.Gold = Rand.Next(_minGold.Value, _maxGold.Value + 1) * 100;
                 }
                 else
                 {
-                    __instance.Gold = 0;
-                    drop = GetValidDrop();
-                    if (drop == null)
+                    __instance.Item = null;
+                    if (Rand.NextDouble() < _goldChance.Value)
                     {
-                        drop = GetLowestQuantityItem();
-                    }
-                    if (drop != null)
-                    {
-                        int quantity = drop.Item1.GetComponent<Equipment>() != null ? 1 : Rand.Next(1, 4);
-                        UIController.Instance.PopupController.ShowReceiveItem(drop.Item1.GetComponent<BaseItem>(), quantity, true, null, drop.Item2);
-                        PlayerController.Instance.Inventory.AddItem(drop.Item1.GetComponent<BaseItem>(), quantity, drop.Item2);
+                        __instance.Gold = Rand.Next(_minGold.Value, _maxGold.Value + 1) * 100;
                     }
                     else
                     {
-                        _log.LogDebug("Failed to find a chest item.");
-                        __instance.Gold = 777;
+                        __instance.Gold = 0;
+                        if (!GetRandomItems(1))
+                        {
+                            _log.LogDebug("Failed to find a chest item.");
+                            __instance.Gold = 777;
+                        }
                     }
                 }
+            }
+        }
 
-                string eggShift = drop?.Item1?.GetComponent<Egg>() == null ? "" : drop?.Item2 == 0 ? "" : drop?.Item2 == 1 ? " (Light)" : " (Dark)";
-                _log.LogDebug($"    After: {(__instance.Gold > 0 ? $"{__instance.Gold} Gold" : drop?.Item1?.GetComponent<BaseItem>()?.GetName())}{eggShift}");
+        private static bool GetRandomItems(int count = 1)
+        {
+            bool foundItem = false;
+            for (int i  = 0; i < count; i++)
+            {
+                Tuple<GameObject, int> drop;
+                drop = GetValidDrop();
+                if (drop == null)
+                {
+                    drop = GetLowestQuantityItem();
+                }
+                if (drop != null)
+                {
+                    int quantity = drop.Item1.GetComponent<Equipment>() != null ? 1 : Rand.Next(1, 4);
+                    UIController.Instance.PopupController.ShowReceiveItem(drop.Item1.GetComponent<BaseItem>(), quantity, true, null, drop.Item2);
+                    PlayerController.Instance.Inventory.AddItem(drop.Item1.GetComponent<BaseItem>(), quantity, drop.Item2);
+                    string eggShift = drop?.Item1?.GetComponent<Egg>() == null ? "" : drop?.Item2 == 0 ? "" : drop?.Item2 == 1 ? " (Light)" : " (Dark)";
+                    _log.LogDebug($"Random item: {(drop?.Item1?.GetComponent<BaseItem>()?.GetName())}{eggShift}");
+                    foundItem = true;
+                }
+            }
+            if (!foundItem)
+            {
+                _log.LogDebug("GetLowestQuantityItem returned null");
+            }
+            return foundItem;
+        }
+
+        private static int CombatControllerGold;
+        [HarmonyPatch(typeof(CombatController), "CheckEggReplacement")]
+        private class CombatControllerCheckEggReplacementPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref bool __result, GameObject reward)
+            {
+                if (GameModeManager.Instance.BraveryMode && reward.GetComponent<Egg>() != null)
+                {
+                    CombatControllerGold += reward.GetComponent<Egg>().Price;
+                    __result = false;
+                    return false;
+                }
+
+                __result = true;
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(CombatController), "GrantReward")]
+        private class CombatControllerGrantRewardPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref CombatController __instance)
+            {
+                FieldInfo combatUiFI = __instance.GetType().GetField("combatUi", BindingFlags.NonPublic | BindingFlags.Instance);
+                CombatUIController combatUi = combatUiFI.GetValue(__instance) as CombatUIController;
+                MethodInfo CheckEggReplacement = __instance.GetType().GetMethod("CheckEggReplacement", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo commonRewardsFI = __instance.GetType().GetField("commonRewards", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo rareRewardsFI = __instance.GetType().GetField("rareRewards", BindingFlags.NonPublic | BindingFlags.Instance);
+                List<InventoryItem> commonRewards = commonRewardsFI.GetValue(__instance) as List<InventoryItem>;
+                List<InventoryItem> rareRewards = rareRewardsFI.GetValue(__instance) as List<InventoryItem>;
+                MethodInfo ShowNewRecordReward = __instance.GetType().GetMethod("ShowNewRecordReward", BindingFlags.NonPublic | BindingFlags.Instance);
+                MethodInfo GetRandomReward = __instance.GetType().GetMethod("GetRandomReward", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (__instance.CurrentEncounter.EncounterType == EEncounterType.InfinityArena)
+                {
+                    combatUi.ResultScreen.Close();
+                    return false;
+                }
+                CombatControllerGold = 0;
+                if (__instance.CurrentEncounter.IsChampionChallenge)
+                {
+                    Monster champion = __instance.GetChampion();
+                    int bestChampionScore = ProgressManager.Instance.GetBestChampionScore(champion);
+                    ProgressManager.Instance.ChampionKilled(champion, __instance.CombatResult.StarsGained, __instance.CombatResult.TotalPoints, champion.GetDifficulty());
+                    int num = Mathf.Min(__instance.CombatResult.StarsGained, champion.RewardsCommon.Count);
+                    int num2 = Mathf.Max(0, Mathf.Min(__instance.CombatResult.StarsGained - 2, champion.RewardsRare.Count));
+                    for (int i = 0; i < num; i++)
+                    {
+                        if (i >= bestChampionScore)
+                        {
+                            //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion.RewardsCommon[i], 0 }))
+                            //{
+                            //    __instance.AddRewardItem(commonRewards, champion.RewardsCommon[i].GetComponent<BaseItem>());
+                            //}
+                            //ProgressManager.Instance.ReceiveItemFromMonster(champion, champion.RewardsCommon[i].GetComponent<BaseItem>());
+                        }
+                    }
+                    for (int j = 0; j < num2; j++)
+                    {
+                        if (j >= bestChampionScore - 2)
+                        {
+                            //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion.RewardsRare[j], 0 }))
+                            //{
+                            //    __instance.AddRewardItem(rareRewards, champion.RewardsRare[j].GetComponent<BaseItem>());
+                            //}
+                            //ProgressManager.Instance.ReceiveItemFromMonster(champion, champion.RewardsRare[j].GetComponent<BaseItem>());
+                        }
+                    }
+                    if (__instance.CombatResult.StarsGained == 6 && bestChampionScore < 6)
+                    {
+                        //PassiveChampion championPassive = champion.SkillManager.GetChampionPassive();
+                        //__instance.AddRewardItem(rareRewards, championPassive.Reward6thStar.GetComponent<BaseItem>(), championPassive.RewardQuantity);
+                    }
+                    if (commonRewards.Count > 0 || rareRewards.Count > 0)
+                    {
+                        PopupController.Instance.ShowMessage(Utils.LOCA("New Record"), Utils.LOCA("New Record score!"), (PopupController.PopupDelegate)ShowNewRecordReward.Invoke(__instance, new object[] { }));
+                    }
+                    else
+                    {
+                        combatUi.ResultScreen.Close();
+                    }
+                    return false;
+                }
+                if (__instance.CurrentEncounter.IsChampion)
+                {
+                    Monster champion2 = __instance.GetChampion();
+                    ProgressManager.Instance.ChampionKilled(champion2, __instance.CombatResult.StarsGained, __instance.CombatResult.TotalPoints, champion2.GetDifficulty());
+                    int num3 = Mathf.Min(__instance.CombatResult.StarsGained, champion2.RewardsCommon.Count);
+                    int num4 = Mathf.Max(0, Mathf.Min(__instance.CombatResult.StarsGained - 2, champion2.RewardsRare.Count));
+                    for (int k = 0; k < num3; k++)
+                    {
+                        //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion2.RewardsCommon[k], 0 }))
+                        //{
+                        //    __instance.AddRewardItem(commonRewards, champion2.RewardsCommon[k].GetComponent<BaseItem>(), (__instance.CombatResult.StarsGained != 6) ? 1 : 2);
+                        //}
+                        //ProgressManager.Instance.ReceiveItemFromMonster(champion2, champion2.RewardsCommon[k].GetComponent<BaseItem>());
+                    }
+                    for (int l = 0; l < num4; l++)
+                    {
+                        //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion2.RewardsRare[l], 0 }))
+                        //{
+                        //    __instance.AddRewardItem(rareRewards, champion2.RewardsRare[l].GetComponent<BaseItem>());
+                        //}
+                        //ProgressManager.Instance.ReceiveItemFromMonster(champion2, champion2.RewardsRare[l].GetComponent<BaseItem>());
+                    }
+                    if (__instance.CombatResult.StarsGained == 6)
+                    {
+                        //PassiveChampion championPassive2 = champion2.SkillManager.GetChampionPassive();
+                        //__instance.AddRewardItem(rareRewards, championPassive2.Reward6thStar.GetComponent<BaseItem>(), championPassive2.RewardQuantity);
+                    }
+                }
+                else
+                {
+                    if (Random.value <= __instance.CombatResult.RareLootChance || __instance.CurrentEncounter.EncounterType == EEncounterType.GuaranteedEggDrop)
+                    {
+                        bool flag = false;
+                        if (!GameModeManager.Instance.BraveryMode)
+                        {
+                            foreach (Monster enemy in __instance.Enemies)
+                            {
+                                if (enemy.Shift != 0)
+                                {
+                                    BaseItem component = enemy.RewardsRare[2].GetComponent<BaseItem>();
+                                    __instance.AddRewardItem(rareRewards, component, 1, (int)((component is Egg) ? enemy.Shift : EShift.Normal));
+                                    flag = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!flag)
+                        {
+                            //__instance.AddRewardItem(rareRewards, (BaseItem)GetRandomReward.Invoke(__instance, new object[] { true }));
+                        }
+                        if (Random.Range(0f, 1f) < __instance.CombatResult.DoubleRareLootChance && PlayerController.Instance.Monsters.Active.Count > 2)
+                        {
+                            //__instance.AddRewardItem(rareRewards, (BaseItem)GetRandomReward.Invoke(__instance, new object[] { true, rareRewards[0].Item }));
+                        }
+                    }
+                    int num5 = ((!(Random.Range(0f, 1f) < __instance.CombatResult.DoubleCommonLootChance)) ? 1 : 2);
+                    for (int m = 0; m < num5; m++)
+                    {
+                        //__instance.AddRewardItem(commonRewards, (BaseItem)GetRandomReward.Invoke(__instance, new object[] { false }));
+                    }
+                }
+                foreach (Monster enemy2 in __instance.Enemies)
+                {
+                    CombatControllerGold += enemy2.GetGoldReward();
+                }
+                foreach (Monster playerMonster in __instance.PlayerMonsters)
+                {
+                    if (!playerMonster.IsDead())
+                    {
+                        CombatControllerGold = Mathf.RoundToInt((float)CombatControllerGold * playerMonster.SkillManager.GetGoldMultiplicator());
+                    }
+                }
+                CombatControllerGold = Mathf.RoundToInt((float)CombatControllerGold * __instance.CombatResult.GoldBonus);
+                PlayerController.Instance.Gold += CombatControllerGold;
+                PopupController.Instance.ShowRewards(commonRewards, rareRewards, CombatControllerGold, combatUi.ResultScreen.Close);
+                rareRewards.Clear();
+                commonRewards.Clear();
+
+                GetRandomItems(1);
+                combatUi.ResultScreen.Close();
+
+                return false;
             }
         }
     }
