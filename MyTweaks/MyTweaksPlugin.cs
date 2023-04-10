@@ -9,10 +9,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Timers;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using static MonoMod.Cil.RuntimeILReferenceBag.FastDelegateInvokers;
 using static PhysicalObject;
 using static UnityEngine.ParticleSystem;
 
@@ -96,6 +98,9 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     LearnActiveFromSavegame.Invoke(__instance, new object[] { __instance.ParentActions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(parentAction) });
                 }
 
+                MethodInfo ValidateSkillTree = __instance.GetType().GetMethod("ValidateSkillTree", BindingFlags.NonPublic | BindingFlags.Instance);
+                ValidateSkillTree.Invoke(__instance, new object[] { });
+
                 ((Monster)monster.GetValue(__instance)).Level = actualLevel;
 
                 return false;
@@ -120,12 +125,92 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        [HarmonyPatch(typeof(BaseAction), "CanUseAction")]
+        private class BaseActionCanUseActionPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref BaseAction __instance, ref bool __result, Monster monster)
+            {
+                if (__instance.GetComponent<ActionShieldBurst>() != null && monster.Shield == 0)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                if (__instance.GetComponent<ActionRevive>() != null && CombatController.Instance.CurrentEncounter.IsInfinityArena && CombatController.Instance.InfinityArenaNPC.ReviveItemsUsed >= CombatController.Instance.InfinityArenaNPC.MaxReviveItems)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                if (__instance.Ultimate && monster.UltimateCooldown > 0)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                foreach (SkillTree skillTree in monster.SkillManager.SkillTrees)
+                {
+                    for (int j = 0; j < SkillTree.TierCount; j++)
+                    {
+                        foreach (SkillTreeEntry item in skillTree.GetSkillsByTier(j))
+                        {
+                            if (__instance.GetFullName() == item.Skill.GetFullName() && !item.Learned)
+                            {
+                                __result = false;
+                                return false;
+                            }
+                        }
+                    }
+                }
+                __result = __instance.GetManaCost(monster) <= monster.CurrentMana;
+                return false;
+            }
+        }
+
         [HarmonyPatch(typeof(SkillManager), "ValidateSkillTree")]
         private class SkillManagerValidateSkillTreePatch
         {
             [UsedImplicitly]
-            private static bool Prefix()
+            private static bool Prefix(ref SkillManager __instance)
             {
+                for (int num = __instance.ParentActions.Count - 1; num >= 0; num--)
+                {
+                    BaseAction baseAction = __instance.ParentActions[num];
+                    bool flag = false;
+                    foreach (BaseAction action in __instance.Actions)
+                    {
+                        if (action.ParentAction == baseAction)
+                        {
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    foreach (BaseAction parentAction in __instance.ParentActions)
+                    {
+                        if (parentAction.ParentAction == baseAction)
+                        {
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    if (!flag)
+                    {
+                        __instance.ParentActions.RemoveAt(num);
+                        __instance.Actions.Add(baseAction);
+                    }
+                }
+
+                for (int num2 = __instance.Actions.Count - 1; num2 >= 0; num2--)
+                {
+                    if (__instance.Actions[num2].Ultimate && !__instance.Ultimates.Contains(__instance.Actions[num2].gameObject))
+                    {
+                        __instance.Actions.RemoveAt(num2);
+                    }
+                }
+
                 return false;
             }
         }
@@ -305,14 +390,23 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        [HarmonyPatch(typeof(ObstacleTileWall), "ValidateObstacle")]
+        private class ObstacleTileWallValidateObstaclePatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref ObstacleTileWall __instance)
+            {
+                PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+            }
+        }
+
         [HarmonyPatch(typeof(Obstacle), "Start")]
         private class ObstacleStartPatch
         {
             [UsedImplicitly]
             private static void Postfix(ref Obstacle __instance)
             {
-                MethodInfo FinishAnimation = __instance.GetType().GetMethod("FinishAnimation", BindingFlags.NonPublic | BindingFlags.Instance);
-                FinishAnimation.Invoke(__instance, new object[] { });
+                PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
             }
         }
 

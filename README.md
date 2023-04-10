@@ -52,6 +52,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Ultimates can now be chosen at any level. Ultimate mana cost is pretty high so you probably won't be able to make use of them until you get mana passives/food/weapons/accessories.
 - Diamond blocks, levitatable blocks, green vines and melody walls are removed.
 - Torches are initialized enkindled.
+- Hidden walls are no longer hidden.
 
 ## Credits
 I used the monster sanctuary mods of [eradev](https://github.com/Eradev) and [evaisadev](https://github.com/EvaisaDev) as examples. Thank you!
