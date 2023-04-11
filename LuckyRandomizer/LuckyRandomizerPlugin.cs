@@ -380,6 +380,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+2") && // remove +2 items
                             !x.GetComponent<BaseItem>().GetName().Contains("Level Badge") && // remove level badges
                             !x.GetComponent<BaseItem>().GetName().Contains("Reward Box") && // remove reward boxes
+                            !x.GetComponent<BaseItem>().GetName().Contains("Craft Box") && // remove craft boxes
                             !blacklistedItems.Contains(x.GetComponent<BaseItem>().ID) &&  // Remove blacklisted items
                             x.GetComponent<KeyItem>() == null && // Remove Keys
                             x.GetComponent<UniqueItem>() == null && // Remove Unique items (ie. Costumes)
