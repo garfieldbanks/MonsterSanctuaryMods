@@ -572,8 +572,231 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
             }
         }
 
+        private static void RemoveInventoryDuplicates()
+        {
+            List<InventoryItem> toRemove = new();
+            List<InventoryItem> tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.CombatConsumables)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.CombatConsumables.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Consumables)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Consumables.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Food)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        toRemove.Add(item);
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Food.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Weapons)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Weapons.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Accessories)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Accessories.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Uniques)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Uniques.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Eggs)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName() && item.Variation == tempItem.Variation)
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Eggs.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity, item.Variation);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.CraftMaterials)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.CraftMaterials.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+            toRemove = new();
+            tempItems = new();
+            foreach (InventoryItem item in PlayerController.Instance.Inventory.Catalysts)
+            {
+                foreach (InventoryItem tempItem in tempItems)
+                {
+                    if (item.GetName() == tempItem.GetName())
+                    {
+                        if (!toRemove.Contains(item))
+                        {
+                            toRemove.Add(item);
+                        }
+                        if (!toRemove.Contains(tempItem))
+                        {
+                            toRemove.Add(tempItem);
+                        }
+                    }
+                }
+                tempItems.Add(item);
+            }
+            foreach (InventoryItem item in toRemove)
+            {
+                PlayerController.Instance.Inventory.Catalysts.Remove(item);
+                PlayerController.Instance.Inventory.AddItem(item.Item.GetComponent<BaseItem>(), item.Quantity);
+            }
+        }
+
         private static bool GetRandomItems(int count = 1)
         {
+            RemoveInventoryDuplicates();
             bool foundItem = false;
             for (int i  = 0; i < count; i++)
             {
