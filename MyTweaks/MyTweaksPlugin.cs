@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using System.Timers;
+using System.Xml;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using static MonoMod.Cil.RuntimeILReferenceBag.FastDelegateInvokers;
@@ -34,6 +35,55 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
 
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+        }
+
+        [HarmonyPatch(typeof(BlobFormAbility), "StartAction")]
+        private class BlobFormAbilityStartActionPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref BlobFormAbility __instance)
+            {
+                _log.LogDebug("BlobFormAbility - Start Ability");
+                try
+                {
+                    if (PlayerController.Instance.BlobForm && !__instance.CanTransformBack())
+                    {
+                        SFXController.Instance.PlaySFX(SFXController.Instance.SFXMenuCancel);
+                        return false;
+                    }
+
+                    AnimElement.PlayAnimElement(__instance.Anim, PlayerController.Instance.PlayerPosition, flipHorizontal: false, flipVertical: false);
+                    FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
+                    finishedCast.SetValue(__instance, false);
+                    FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
+                    transformed.SetValue(__instance, false);
+                    FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
+                    dTimeAcc.SetValue(__instance, 0f);
+                    GameStateManager.Instance.StartCinematic(__instance);
+                    PlayerController.Instance.Physics.IsLifted = true;
+                    PlayerController.Instance.Physics.Velocity = Vector2.zero;
+                }
+                catch (Exception e)
+                {
+                    _log.LogDebug($"Exception Message {e.Message}");
+                    _log.LogDebug($"Exception ToString: {e}");
+                }
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(SFXController), "PlaySFX")]
+        private class SFXControllerPlaySFXPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(AudioClip clip)
+            {
+                if (clip == SFXController.Instance.SFXMonsterTurn)
+                {
+                    return false;
+                }
+                return true;
+            }
         }
 
         [HarmonyPatch(typeof(Monster), "CheckMonsterValidity")]
@@ -336,7 +386,10 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                         MethodInfo UpdateState = __instance.GetType().GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
                         UpdateState.Invoke(__instance, new object[] { true });
                     }
-                    PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                    if (__instance.BoolSwitchName != "HBC2RotatingGate")
+                    {
+                        PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                    }
                     return false;
                 }
                 return true;
@@ -357,10 +410,24 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                         MethodInfo UpdateState = __instance.GetType().GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
                         UpdateState.Invoke(__instance, new object[] { true });
                     }
-                    PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                    if (__instance.BoolSwitchName != "HBC2RotatingGate")
+                    {
+                        PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                    }
                     return false;
                 }
                 return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(InventoryManager), "GetKey")]
+        private class InventoryManagerGetKeyPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref InventoryItem __result)
+            {
+                __result = new InventoryItem();
+                return false;
             }
         }
 
@@ -370,7 +437,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref InventoryManager __instance, EUniqueItemId uniqueID, ref bool __result)
             {
-                if (uniqueID == EUniqueItemId.BlobKey)
+                if (uniqueID == EUniqueItemId.BlobKey || uniqueID == EUniqueItemId.WarmUnderwear)
                 {
                     __result = true;
                     return false;
@@ -477,7 +544,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 {
                     component.TarMount = true;
                     component.IncreasedJumpHeight = true;
-
                 }
                 return true;
             }

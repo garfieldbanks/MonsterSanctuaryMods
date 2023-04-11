@@ -53,6 +53,9 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Diamond blocks, levitatable blocks, green vines and melody walls are removed.
 - Torches are initialized enkindled.
 - Hidden walls are no longer hidden.
+- Removed annoying sound when switching monsters in the menu screen.
+- Keys are no longer required to open any doors.
+- Warm underwear is no longer required to enter cold water.
 
 ## Credits
 I used the monster sanctuary mods of [eradev](https://github.com/Eradev) and [evaisadev](https://github.com/EvaisaDev) as examples. Thank you!
