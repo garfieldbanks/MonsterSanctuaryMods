@@ -37,13 +37,34 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         }
 
+        [HarmonyPatch(typeof(BlobFormAbility), "FinishAction")]
+        private class BlobFormAbilityFinishActionPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref BlobFormAbility __instance)
+            {
+                _log.LogDebug("BlobFormAbility - FinishAction");
+                try
+                {
+                    GameStateManager.Instance.EndCinematic(__instance);
+                    PlayerController.Instance.Physics.IsLifted = false;
+                }
+                catch (Exception e)
+                {
+                    _log.LogDebug($"Exception Message {e.Message}");
+                    _log.LogDebug($"Exception ToString: {e}");
+                }
+                return false;
+            }
+        }
+
         [HarmonyPatch(typeof(BlobFormAbility), "StartAction")]
         private class BlobFormAbilityStartActionPatch
         {
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
-                _log.LogDebug("BlobFormAbility - Start Ability");
+                _log.LogDebug("BlobFormAbility - StartAction");
                 try
                 {
                     if (PlayerController.Instance.BlobForm && !__instance.CanTransformBack())
@@ -62,6 +83,103 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     GameStateManager.Instance.StartCinematic(__instance);
                     PlayerController.Instance.Physics.IsLifted = true;
                     PlayerController.Instance.Physics.Velocity = Vector2.zero;
+                }
+                catch (Exception e)
+                {
+                    _log.LogDebug($"Exception Message {e.Message}");
+                    _log.LogDebug($"Exception ToString: {e}");
+                }
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(BlobFormAbility), "UpdateAction")]
+        private class BlobFormAbilityUpdateActionPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref BlobFormAbility __instance)
+            {
+                _log.LogDebug("BlobFormAbility - UpdateAction");
+                try
+                {
+                    FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
+                    FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
+                    FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
+                    dTimeAcc.SetValue(__instance, (float)dTimeAcc.GetValue(__instance) + Time.deltaTime);
+                    if ((float)dTimeAcc.GetValue(__instance) > __instance.BlobTransformTimer && !(bool)transformed.GetValue(__instance))
+                    {
+                        _log.LogDebug("BlobFormAbility - Start Transform");
+                        transformed.SetValue(__instance, true);
+                        if (PlayerController.Instance.BlobForm)
+                        {
+                            __instance.TransformBack();
+                        }
+                        else
+                        {
+                            PlayerController.Instance.BlobForm = true;
+                            PlayerController.Instance.UpdateCollider();
+                            PlayerController.Instance.PlayAnimation(PlayerController.Instance.Animator.CurrentClip.name);
+                            GameStateManager.Instance.EndCinematic(__instance);
+                            PlayerController.Instance.Physics.IsLifted = false;
+                        }
+                    }
+
+                    if ((float)dTimeAcc.GetValue(__instance) > __instance.CastDuration && !(bool)finishedCast.GetValue(__instance))
+                    {
+                        finishedCast.SetValue(__instance, true);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogDebug($"Exception Message {e.Message}");
+                    _log.LogDebug($"Exception ToString: {e}");
+                }
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(BlobFormAbility), "CanTransformBack")]
+        private class BlobFormAbilityCanTransformBackPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref BlobFormAbility __instance, ref bool __result)
+            {
+                _log.LogDebug("BlobFormAbility - CanTransformBack");
+                try
+                {
+                    __result = false;
+                    RaycastHit2D raycastHit2D = Physics2D.Raycast(PlayerController.Instance.Physics.PhysObject.RaycastOrigins.topLeft, Vector2.up, 16f, PlayerController.Instance.Physics.CollisionMask);
+                    RaycastHit2D raycastHit2D2 = Physics2D.Raycast(PlayerController.Instance.Physics.PhysObject.RaycastOrigins.topRight, Vector2.up, 16f, PlayerController.Instance.Physics.CollisionMask);
+                    if (!raycastHit2D)
+                    {
+                        __result = !raycastHit2D2;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _log.LogDebug($"Exception Message {e.Message}");
+                    _log.LogDebug($"Exception ToString: {e}");
+                }
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(BlobFormAbility), "TransformBack")]
+        private class BlobFormAbilityTransformBackPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref BlobFormAbility __instance)
+            {
+                _log.LogDebug("BlobFormAbility - TransformBack");
+                try
+                {
+                    if (__instance.CanTransformBack())
+                    {
+                        PlayerController.Instance.BlobForm = false;
+                        PlayerController.Instance.UpdateCollider();
+                        PlayerController.Instance.PlayAnimation(PlayerController.Instance.Animator.CurrentClip.name);
+                        PlayerController.Instance.Physics.SetPlayerPosition(PlayerController.Instance.Physics.PhysObject.RealPosition + Vector3.up * 13f);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -218,38 +336,66 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        private static void SetupAction(ref SkillManager __instance, ref BaseAction action)
+        {
+            if (action.GetName() == action.GetFullName())
+            {
+                return;
+            }
+            SkillTree[] skillTrees = __instance.SkillTrees;
+            foreach (SkillTree skillTree in skillTrees)
+            {
+                for (int j = 4; j >= 0; j--)
+                {
+                    foreach (SkillTreeEntry item in skillTree.GetSkillsByTier(j))
+                    {
+                        if (item.Learned)
+                        {
+                            BaseAction otherAction = item.Skill as BaseAction;
+                            if (otherAction != null && otherAction.GetName() != "" && action != otherAction && action.GetName() == otherAction.GetName())
+                            {
+                                __instance.ParentActions.Add(otherAction);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(SkillManager), "ValidateSkillTree")]
         private class SkillManagerValidateSkillTreePatch
         {
             [UsedImplicitly]
             private static bool Prefix(ref SkillManager __instance)
             {
-                for (int num = __instance.ParentActions.Count - 1; num >= 0; num--)
+                __instance.ParentActions.Clear();
+                SkillTree[] skillTrees = __instance.SkillTrees;
+                foreach (SkillTree skillTree in skillTrees)
                 {
-                    BaseAction baseAction = __instance.ParentActions[num];
-                    bool flag = false;
-                    foreach (BaseAction action in __instance.Actions)
+                    for (int j = 4; j >= 0; j--)
                     {
-                        if (action.ParentAction == baseAction)
+                        foreach (SkillTreeEntry item in skillTree.GetSkillsByTier(j))
                         {
-                            flag = true;
-                            break;
+                            if (item.Learned)
+                            {
+                                BaseAction action = item.Skill as BaseAction;
+                                if (action != null && action.GetName() != "" && !__instance.ParentActions.Contains(action))
+                                {
+                                    if (!__instance.Actions.Contains(action))
+                                    {
+                                        __instance.Actions.Add(action);
+                                    }
+                                    SetupAction(ref __instance, ref action);
+                                }
+                                else
+                                {
+                                    if (action != null && action.GetName() != "" && __instance.Actions.Contains(action))
+                                    {
+                                        __instance.Actions.Remove(action);
+                                    }
+                                }
+                            }
                         }
-                    }
-
-                    foreach (BaseAction parentAction in __instance.ParentActions)
-                    {
-                        if (parentAction.ParentAction == baseAction)
-                        {
-                            flag = true;
-                            break;
-                        }
-                    }
-
-                    if (!flag)
-                    {
-                        __instance.ParentActions.RemoveAt(num);
-                        __instance.Actions.Add(baseAction);
                     }
                 }
 
@@ -335,6 +481,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     }
                     ((UltimateIcon)CurrentSelected.GetValue(__instance)).SetSelected(isSelected: true);
                 }
+                MethodInfo ValidateSkillTree = ((Monster)monster.GetValue(__instance)).SkillManager.GetType().GetMethod("ValidateSkillTree", BindingFlags.NonPublic | BindingFlags.Instance);
+                ValidateSkillTree.Invoke(((Monster)monster.GetValue(__instance)).SkillManager, new object[] { });
                 return false;
             }
         }
@@ -424,10 +572,12 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private class InventoryManagerGetKeyPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(ref InventoryItem __result)
+            private static void Postfix(ref InventoryItem __result)
             {
-                __result = new InventoryItem();
-                return false;
+                if (__result == null)
+                {
+                    __result = new InventoryItem();
+                }
             }
         }
 
