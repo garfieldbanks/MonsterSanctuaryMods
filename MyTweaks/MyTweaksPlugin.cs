@@ -37,58 +37,31 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
         }
 
-        [HarmonyPatch(typeof(BlobFormAbility), "FinishAction")]
-        private class BlobFormAbilityFinishActionPatch
-        {
-            [UsedImplicitly]
-            private static bool Prefix(ref BlobFormAbility __instance)
-            {
-                _log.LogDebug("BlobFormAbility - FinishAction");
-                try
-                {
-                    GameStateManager.Instance.EndCinematic(__instance);
-                    PlayerController.Instance.Physics.IsLifted = false;
-                }
-                catch (Exception e)
-                {
-                    _log.LogDebug($"Exception Message {e.Message}");
-                    _log.LogDebug($"Exception ToString: {e}");
-                }
-                return false;
-            }
-        }
-
         [HarmonyPatch(typeof(BlobFormAbility), "StartAction")]
         private class BlobFormAbilityStartActionPatch
         {
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
-                _log.LogDebug("BlobFormAbility - StartAction");
-                try
-                {
-                    if (PlayerController.Instance.BlobForm && !__instance.CanTransformBack())
-                    {
-                        SFXController.Instance.PlaySFX(SFXController.Instance.SFXMenuCancel);
-                        return false;
-                    }
+                __instance.IsMorphBall = false;
 
-                    AnimElement.PlayAnimElement(__instance.Anim, PlayerController.Instance.PlayerPosition, flipHorizontal: false, flipVertical: false);
-                    FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
-                    finishedCast.SetValue(__instance, false);
-                    FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
-                    transformed.SetValue(__instance, false);
-                    FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
-                    dTimeAcc.SetValue(__instance, 0f);
-                    GameStateManager.Instance.StartCinematic(__instance);
-                    PlayerController.Instance.Physics.IsLifted = true;
-                    PlayerController.Instance.Physics.Velocity = Vector2.zero;
-                }
-                catch (Exception e)
+                if (PlayerController.Instance.BlobForm && !__instance.CanTransformBack())
                 {
-                    _log.LogDebug($"Exception Message {e.Message}");
-                    _log.LogDebug($"Exception ToString: {e}");
+                    SFXController.Instance.PlaySFX(SFXController.Instance.SFXMenuCancel);
+                    return false;
                 }
+
+                AnimElement.PlayAnimElement(__instance.Anim, PlayerController.Instance.PlayerPosition, flipHorizontal: false, flipVertical: false);
+                FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
+                finishedCast.SetValue(__instance, false);
+                FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
+                transformed.SetValue(__instance, false);
+                FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
+                dTimeAcc.SetValue(__instance, 0f);
+                //GameStateManager.Instance.StartCinematic(__instance);
+                PlayerController.Instance.Physics.IsLifted = true;
+                PlayerController.Instance.Physics.Velocity = Vector2.zero;
+
                 return false;
             }
         }
@@ -99,67 +72,44 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
-                _log.LogDebug("BlobFormAbility - UpdateAction");
-                try
+                FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
+                dTimeAcc.SetValue(__instance, (float)dTimeAcc.GetValue(__instance) + Time.deltaTime);
+                if ((float)dTimeAcc.GetValue(__instance) > __instance.BlobTransformTimer && !(bool)transformed.GetValue(__instance))
                 {
-                    FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
-                    FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
-                    FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
-                    dTimeAcc.SetValue(__instance, (float)dTimeAcc.GetValue(__instance) + Time.deltaTime);
-                    if ((float)dTimeAcc.GetValue(__instance) > __instance.BlobTransformTimer && !(bool)transformed.GetValue(__instance))
+                    _log.LogDebug("BlobFormAbility - Start Transform");
+                    transformed.SetValue(__instance, true);
+                    if (PlayerController.Instance.BlobForm)
                     {
-                        _log.LogDebug("BlobFormAbility - Start Transform");
-                        transformed.SetValue(__instance, true);
-                        if (PlayerController.Instance.BlobForm)
-                        {
-                            __instance.TransformBack();
-                        }
-                        else
-                        {
-                            PlayerController.Instance.BlobForm = true;
-                            PlayerController.Instance.UpdateCollider();
-                            PlayerController.Instance.PlayAnimation(PlayerController.Instance.Animator.CurrentClip.name);
-                            GameStateManager.Instance.EndCinematic(__instance);
-                            PlayerController.Instance.Physics.IsLifted = false;
-                        }
+                        __instance.TransformBack();
                     }
-
-                    if ((float)dTimeAcc.GetValue(__instance) > __instance.CastDuration && !(bool)finishedCast.GetValue(__instance))
+                    else
                     {
-                        finishedCast.SetValue(__instance, true);
+                        PlayerController.Instance.BlobForm = true;
+                        PlayerController.Instance.UpdateCollider();
+                        //PlayerController.Instance.PlayAnimation(PlayerController.Instance.Animator.CurrentClip.name);
+                        //GameStateManager.Instance.EndCinematic(__instance);
+                        PlayerController.Instance.Physics.IsLifted = false;
                     }
                 }
-                catch (Exception e)
+
+                if ((float)dTimeAcc.GetValue(__instance) > __instance.CastDuration && !(bool)finishedCast.GetValue(__instance))
                 {
-                    _log.LogDebug($"Exception Message {e.Message}");
-                    _log.LogDebug($"Exception ToString: {e}");
+                    finishedCast.SetValue(__instance, true);
                 }
                 return false;
             }
         }
 
-        [HarmonyPatch(typeof(BlobFormAbility), "CanTransformBack")]
-        private class BlobFormAbilityCanTransformBackPatch
+        [HarmonyPatch(typeof(BlobFormAbility), "FinishAction")]
+        private class BlobFormAbilityFinishActionPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(ref BlobFormAbility __instance, ref bool __result)
+            private static bool Prefix(ref BlobFormAbility __instance)
             {
-                _log.LogDebug("BlobFormAbility - CanTransformBack");
-                try
-                {
-                    __result = false;
-                    RaycastHit2D raycastHit2D = Physics2D.Raycast(PlayerController.Instance.Physics.PhysObject.RaycastOrigins.topLeft, Vector2.up, 16f, PlayerController.Instance.Physics.CollisionMask);
-                    RaycastHit2D raycastHit2D2 = Physics2D.Raycast(PlayerController.Instance.Physics.PhysObject.RaycastOrigins.topRight, Vector2.up, 16f, PlayerController.Instance.Physics.CollisionMask);
-                    if (!raycastHit2D)
-                    {
-                        __result = !raycastHit2D2;
-                    }
-                }
-                catch (Exception e)
-                {
-                    _log.LogDebug($"Exception Message {e.Message}");
-                    _log.LogDebug($"Exception ToString: {e}");
-                }
+                //GameStateManager.Instance.EndCinematic(__instance);
+                PlayerController.Instance.Physics.IsLifted = false;
                 return false;
             }
         }
@@ -170,21 +120,12 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
-                _log.LogDebug("BlobFormAbility - TransformBack");
-                try
+                if (__instance.CanTransformBack())
                 {
-                    if (__instance.CanTransformBack())
-                    {
-                        PlayerController.Instance.BlobForm = false;
-                        PlayerController.Instance.UpdateCollider();
-                        PlayerController.Instance.PlayAnimation(PlayerController.Instance.Animator.CurrentClip.name);
-                        PlayerController.Instance.Physics.SetPlayerPosition(PlayerController.Instance.Physics.PhysObject.RealPosition + Vector3.up * 13f);
-                    }
-                }
-                catch (Exception e)
-                {
-                    _log.LogDebug($"Exception Message {e.Message}");
-                    _log.LogDebug($"Exception ToString: {e}");
+                    PlayerController.Instance.BlobForm = false;
+                    PlayerController.Instance.UpdateCollider();
+                    //PlayerController.Instance.PlayAnimation(PlayerController.Instance.Animator.CurrentClip.name);
+                    PlayerController.Instance.Physics.SetPlayerPosition(PlayerController.Instance.Physics.PhysObject.RealPosition + Vector3.up * 13f);
                 }
                 return false;
             }
