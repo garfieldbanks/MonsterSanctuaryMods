@@ -58,5 +58,41 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Warm underwear is no longer required to enter cold water.
 - Fix blob form. I think this may have been a bug in the game itself because none of my tweaks really seemed to modify anything that might affect it. But for whatever reason I occasionally I had freezes (requiring alt+f4 to get out of) when using blob form. I tried many different things to fix it and what finally worked was turning off the blob cinematic and animation lines in the code. As far as I could tell in-game these lines only forced the character to not move when transforming. With these lines commented out the transform cloud still plays and the transformation occurs but now you can move immediately after transforming into a blob. And it no longer freezes! I prefer being a blob rather than a morph ball so I made the morph ball display as a blob.
 
-## Credits
-I used the monster sanctuary mods of [eradev](https://github.com/Eradev) and [evaisadev](https://github.com/EvaisaDev) as examples. Thank you!
+### Data Dumper
+- Dumps some data into .json files.
+
+### Display Unhatched Eggs
+- Display a \* before unhatched eggs' name.
+
+### Display Valid Monsters Evolution
+- Only display valid monsters when choosing a Catalyst target.
+
+### Get All Army Rewards
+- Get all unlocked army rewards and multiple eggs donation rewards at once.
+
+### Level Caps
+- Custom level cap for your monsters and enemies.
+- `I changed this to set monster level to current player max monster level.`
+
+### NG+ Options
+- Various options when starting a New Game+
+- `I added options to clear inventory and monsters.`
+
+### Random Randomizer
+- Randomize random encounters and chests' content in Randomizer mode.
+- `I added a fix to check if the item is null and the chest has no gold to prevent essential items being randomized.`
+
+### Shift Color Name
+- Change the monster name's color depending of its shift in certain screens.
+- `I added a fix for unshifted monsters when donating to the monster army.`
+
+### Start Button Confirm
+- Allow pressing a button to move the cursor of the rename window to the confirm button.
+
+### Hatch Max Level Eggs
+- Changes the level eggs are hatched at to equal your highest level monster, instead of highest level monster minus two.
+
+### Credits
+- https://github.com/Eradev/MonsterSanctuaryMods
+- https://github.com/Wulfbanes/MonsterSanctuaryMods
+- https://github.com/EvaisaDev?tab=repositories
