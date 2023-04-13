@@ -78,7 +78,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 dTimeAcc.SetValue(__instance, (float)dTimeAcc.GetValue(__instance) + Time.deltaTime);
                 if ((float)dTimeAcc.GetValue(__instance) > __instance.BlobTransformTimer && !(bool)transformed.GetValue(__instance))
                 {
-                    _log.LogDebug("BlobFormAbility - Start Transform");
                     transformed.SetValue(__instance, true);
                     if (PlayerController.Instance.BlobForm)
                     {
