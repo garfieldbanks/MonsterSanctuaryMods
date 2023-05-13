@@ -22,19 +22,25 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ## Mods
 ### CombatSpeed
 - Faster combat speeds available in the game options menu.
+
 ### Fly
 - Infinite jumping.
+
 ### FreeJump
 - Double jump from the beginning of the game.
+
 ### NewGamePlusMonsterAbilities
 - Use all monster explore abilities from the beginning of the game without the need to encounter it.
+
 ### NewGamePlusMonsterArmy
 - Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard).
+
 ### LuckyRandomizer
 - Based on the randomizer mod by eradev.
 - Fixes the issue of the original mod which prevented blog burg chambers from opening.
 - Fixes the issue of the original mod which prevented certain essential items from being received.
 - Rewards from monster battles and the items in chests are randomly selected from items you don't already have. Once you have all items, you'll receive items with the lowest quantity in your inventory.
+
 ### MyTweaks
 - These tweaks can be individually enabled/disabled in the in-game mods menu.
 - Any level badge can be used to level any monster up to the same level as your current max level monster.
@@ -85,7 +91,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Fixes the issue of the original mod which prevented certain essential items from being received.
 
 ### Shift Color Name
-- Change the monster name's color depending of its shift in certain screens.
+- Change the monster name's color depending on its shift in certain screens.
 - Fixes a bug of the original mod for unshifted monsters when donating to the monster army.
 
 ### Start Button Confirm

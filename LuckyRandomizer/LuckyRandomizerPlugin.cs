@@ -331,6 +331,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
         }
         private static Tuple<GameObject, int> GetValidDrop()
         {
+            Dictionary<string, int> equipment = new();
             List<GameObject> weapons = new();
             List<GameObject> accessories = new();
             List<GameObject> catalysts = new();
@@ -341,10 +342,24 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
             List<InventoryItem> eggs = new();
             foreach (InventoryItem item in PlayerController.Instance.Inventory.Weapons)
             {
+                var split = item.GetName().Split('+');
+                string baseItemName = split[0].Trim();
+                if (!equipment.ContainsKey(baseItemName))
+                {
+                    equipment[baseItemName] = 0;
+                }
+                equipment[baseItemName] += item.Quantity;
                 weapons.Add(item.Item.gameObject);
             }
             foreach (InventoryItem item in PlayerController.Instance.Inventory.Accessories)
             {
+                var split = item.GetName().Split('+');
+                string baseItemName = split[0].Trim();
+                if (!equipment.ContainsKey(baseItemName))
+                {
+                    equipment[baseItemName] = 0;
+                }
+                equipment[baseItemName] += item.Quantity;
                 accessories.Add(item.Item.gameObject);
             }
             if (!_disableCatalysts.Value)
@@ -414,9 +429,22 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                 }
                 else if (item.GetComponent<Egg>() == null)
                 {
-                    // add it twice to counteract the odds of getting an egg
-                    _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
-                    _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                    // adding these twice to counteract the odds of getting an egg
+                    if (item.GetComponent<Equipment>() != null)
+                    {
+                        var split = item.GetComponent<BaseItem>().GetName().Split('+');
+                        string baseItemName = split[0].Trim();
+                        if (!equipment.ContainsKey(baseItemName) || equipment[baseItemName] < 6)
+                        {
+                            _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                            _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                        }
+                    }
+                    else
+                    {
+                        _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                        _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                    }
                 }
             }
             if (!_disableEggs.Value) 
@@ -430,7 +458,6 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     }
                 }
             }
-            
 
             var highestLevel = PlayerController.Instance.Monsters.GetHighestLevel();
 

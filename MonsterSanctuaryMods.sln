@@ -35,8 +35,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShiftColorName", "ShiftColo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StartButtonConfirm", "StartButtonConfirm\StartButtonConfirm.csproj", "{468FBA5A-2A58-4762-B88F-AC6A566DC797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmptyMod", "EmptyMod\EmptyMod.csproj", "{EBD2D9CD-3A42-46EC-B0C3-73A7D00C5A2B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RandomRandomizer", "RandomRandomizer\RandomRandomizer.csproj", "{7EBF8EE5-BF30-4B6E-94B8-97B2F67D83FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShowOnlyValidEvolutions", "ShowOnlyValidEvolutions\ShowOnlyValidEvolutions.csproj", "{1AC91C35-81C4-465F-9CEF-869825857982}"
@@ -111,10 +109,6 @@ Global
 		{468FBA5A-2A58-4762-B88F-AC6A566DC797}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{468FBA5A-2A58-4762-B88F-AC6A566DC797}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{468FBA5A-2A58-4762-B88F-AC6A566DC797}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EBD2D9CD-3A42-46EC-B0C3-73A7D00C5A2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EBD2D9CD-3A42-46EC-B0C3-73A7D00C5A2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EBD2D9CD-3A42-46EC-B0C3-73A7D00C5A2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EBD2D9CD-3A42-46EC-B0C3-73A7D00C5A2B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7EBF8EE5-BF30-4B6E-94B8-97B2F67D83FB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7EBF8EE5-BF30-4B6E-94B8-97B2F67D83FB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EBF8EE5-BF30-4B6E-94B8-97B2F67D83FB}.Release|Any CPU.ActiveCfg = Release|Any CPU
