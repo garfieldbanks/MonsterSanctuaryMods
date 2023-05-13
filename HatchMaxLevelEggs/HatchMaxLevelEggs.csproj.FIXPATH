@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>garfieldbanks.MonsterSanctuary.LuckyRandomizer</AssemblyName>
-    <Description>Randomize random encounters and chests' content in Randomizer mode.</Description>
-    <Version>1.1.2</Version>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs</AssemblyName>
+    <Description>Hatch eggs at max level.</Description>
+    <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>garfieldbanks.MonsterSanctuary.LuckyRandomizer</RootNamespace>
-    <PackageId>garfieldbanks.MonsterSanctuary.LuckyRandomizer</PackageId>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs</RootNamespace>
     <Authors>garfieldbanks</Authors>
-    <Product>LuckyRandomizer</Product>
+    <Product>HatchMaxLevelEggs</Product>
+    <PackageId>garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs</PackageId>
   </PropertyGroup>
 
   <ItemGroup>

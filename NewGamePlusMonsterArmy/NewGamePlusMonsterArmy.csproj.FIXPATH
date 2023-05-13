@@ -9,7 +9,7 @@
     <LangVersion>9.0</LangVersion>
     <RootNamespace>garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy</RootNamespace>
     <Authors>garfieldbanks</Authors>
-    <Product>New Game Plus Monster Army</Product>
+    <Product>NG+ MonsterArmy</Product>
     <PackageId>garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy</PackageId>
   </PropertyGroup>
 
@@ -22,6 +22,10 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
   </ItemGroup>
   
   <ItemGroup>

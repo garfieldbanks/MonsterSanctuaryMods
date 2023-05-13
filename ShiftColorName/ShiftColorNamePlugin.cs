@@ -1,26 +1,50 @@
 ﻿using System;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace eradev.monstersanctuary.ShiftColorName
+namespace garfieldbanks.MonsterSanctuary.ShiftColorName
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ShiftColorNamePlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.ShiftColorName";
+        public const string ModName = "ShiftColorName";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         // ReSharper disable once NotAccessedField.Local
         private static ManualLogSource _log;
 
         [UsedImplicitly]
         private void Awake()
         {
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
+
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
             _log = Logger;
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         [HarmonyPatch(typeof(MonsterSummary), "SetMonster")]
@@ -29,6 +53,11 @@ namespace eradev.monstersanctuary.ShiftColorName
             [UsedImplicitly]
             private static void Postfix(ref MonsterSummary __instance)
             {
+                if (!_isEnabled.Value)
+                {
+                    return;
+                }
+
                 var monster = __instance.Monster;
 
                 if (monster == null)
@@ -54,10 +83,13 @@ namespace eradev.monstersanctuary.ShiftColorName
         private class ColorTweenEndTweenPatch
         {
             [UsedImplicitly]
-            private static void Prefix(
-                ref ColorTween __instance,
-                ref bool resetColor)
+            private static void Prefix(ref ColorTween __instance, ref bool resetColor)
             {
+                if (!_isEnabled.Value)
+                {
+                    return;
+                }
+
                 var text = __instance.gameObject.GetComponent<tk2dTextMesh>();
 
                 if (text != null &&
@@ -73,10 +105,13 @@ namespace eradev.monstersanctuary.ShiftColorName
         private class MonsterArmyMenuShowDonateMonsterMenuItemPatch
         {
             [UsedImplicitly]
-            private static void Postfix(
-                IMenuListDisplayable displayable,
-                MenuListItem menuItem)
+            private static void Postfix(IMenuListDisplayable displayable, MenuListItem menuItem)
             {
+                if (!_isEnabled.Value)
+                {
+                    return;
+                }
+
                 var monster = (Monster)displayable;
 
                 menuItem.TextColorOverride = monster.Shift switch

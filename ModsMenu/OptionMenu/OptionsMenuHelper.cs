@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace eradev.monstersanctuary.ModsMenuNS.OptionMenu
+namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu
 {
     internal static class OptionsMenuHelper
     {

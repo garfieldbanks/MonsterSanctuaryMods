@@ -2,16 +2,26 @@
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace eradev.monstersanctuary.GetAllArmyRewards
+namespace garfieldbanks.MonsterSanctuary.GetAllArmyRewards
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class GetAllArmyRewardsPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.GetAllArmyRewards";
+        public const string ModName = "GetAllArmyRewards";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         private static ManualLogSource _log;
         private static MonsterArmyMenu _monsterArmyMenu;
 
@@ -22,11 +32,25 @@ namespace eradev.monstersanctuary.GetAllArmyRewards
         [UsedImplicitly]
         private void Awake()
         {
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
+
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
             _log = Logger;
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static int GetPointsRequired(MonsterArmyMenu instance)
@@ -71,11 +95,13 @@ namespace eradev.monstersanctuary.GetAllArmyRewards
         private class MonsterArmyMenuCheckRewardPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(
-                ref MonsterArmyMenu __instance,
-                int ___armyStrength,
-                NPC ___monsterArmyNPC)
+            private static bool Prefix(ref MonsterArmyMenu __instance, int ___armyStrength, NPC ___monsterArmyNPC)
             {
+                if (!_isEnabled.Value)
+                {
+                    return true;
+                }
+
                 var rewardData = new List<RewardData>();
                 var lastReachedGoal = 0;
                 var allRewards = new Dictionary<BaseItem, int>();
@@ -148,11 +174,9 @@ namespace eradev.monstersanctuary.GetAllArmyRewards
         private class MonsterArmyMenuConfirmDonateEggDialoguePatch
         {
             [UsedImplicitly]
-            private static bool Prefix(
-                ref MonsterArmyMenu __instance,
-                bool ___donateMultipleEggMode)
+            private static bool Prefix(ref MonsterArmyMenu __instance, bool ___donateMultipleEggMode)
             {
-                if (!___donateMultipleEggMode || !__instance.SelectedEggOrder.Any())
+                if (!_isEnabled.Value || !___donateMultipleEggMode || !__instance.SelectedEggOrder.Any())
                 {
                     return true;
                 }

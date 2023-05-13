@@ -1,5 +1,7 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 using System.Linq;
@@ -7,24 +9,57 @@ using UnityEngine;
 
 namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class NewGamePlusMonsterArmyPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy";
+        public const string ModName = "NG+ MonsterArmy";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         [UsedImplicitly]
         private void Awake()
         {
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
+            new Harmony(ModGUID).PatchAll();
+
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         [HarmonyPatch(typeof(Monster), "CanDonateMonster")]
         private class MonsterCanDonateMonsterPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(ref Monster __instance, ref bool __result)
+            private static bool Prefix(ref Monster __instance, ref bool isMonsterArmy, ref bool __result)
             {
-                if (__instance.GetComponent<MonsterFamiliar>() != null)
+                if (!_isEnabled.Value)
+                {
+                    return true;
+                }
+
+                if (isMonsterArmy && __instance.GetComponent<MonsterFamiliar>() != null)
+                {
+                    __result = false;
+                    return false;
+                }
+
+                if (__instance == PlayerController.Instance.Monsters.Familiar)
                 {
                     __result = false;
                     return false;
@@ -54,56 +89,53 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
                     return false;
                 }
 
-                if (__instance.ExploreAction.GetComponent<SwimmingAbility>() != null)
+                bool flag = false;
+                if (__instance.HasSwimmingAbility())
                 {
+                    flag = true;
                     foreach (Monster item3 in PlayerController.Instance.Monsters.Active)
                     {
-                        if (item3 != __instance && item3.ExploreAction.GetComponent<SwimmingAbility>() != null)
+                        if (item3 != __instance && item3.HasSwimmingAbility())
                         {
-                            __result = true;
-                            return false;
+                            flag = false;
+                            break;
                         }
                     }
 
                     foreach (Monster item4 in PlayerController.Instance.Monsters.Inactive)
                     {
-                        if (item4 != __instance && item4.ExploreAction.GetComponent<SwimmingAbility>() != null)
+                        if (item4 != __instance && item4.HasSwimmingAbility())
                         {
-                            __result = true;
-                            return false;
+                            flag = false;
+                            break;
                         }
                     }
-
-                    __result = false;
-                    return false;
                 }
 
-                FlyingAbility component = __instance.ExploreAction.GetComponent<FlyingAbility>();
-                if (component != null && component.IsImprovedFlying)
+                bool flag2 = false;
+                if (__instance.HasImprovedFlying())
                 {
+                    flag2 = true;
                     foreach (Monster item5 in PlayerController.Instance.Monsters.Active)
                     {
-                        if (item5 != __instance && item5.ExploreAction.GetComponent<FlyingAbility>() != null && item5.ExploreAction.GetComponent<FlyingAbility>().IsImprovedFlying)
+                        if (item5 != __instance && item5.HasImprovedFlying())
                         {
-                            __result = true;
-                            return false;
+                            flag2 = false;
+                            break;
                         }
                     }
 
                     foreach (Monster item6 in PlayerController.Instance.Monsters.Inactive)
                     {
-                        if (item6 != __instance && item6.ExploreAction.GetComponent<FlyingAbility>() != null && item6.ExploreAction.GetComponent<FlyingAbility>().IsImprovedFlying)
+                        if (item6 != __instance && item6.HasImprovedFlying())
                         {
-                            __result = true;
-                            return false;
+                            flag2 = false;
+                            break;
                         }
                     }
-
-                    __result = false;
-                    return false;
                 }
 
-                __result = true;
+                __result = !(flag || flag2);
                 return false;
             }
         }

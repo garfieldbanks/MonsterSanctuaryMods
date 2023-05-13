@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.NGPlusOptions</AssemblyName>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.NGPlusOptions</AssemblyName>
     <Description>Various options when starting a New Game+</Description>
     <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.NGPlusOptions</RootNamespace>
-    <Authors>eradev</Authors>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.NGPlusOptions</RootNamespace>
+    <Authors>garfieldbanks</Authors>
     <Product>NG+ Options</Product>
   </PropertyGroup>
 
@@ -21,6 +21,10 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
   </ItemGroup>
   
   <ItemGroup>

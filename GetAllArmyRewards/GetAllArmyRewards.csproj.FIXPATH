@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.GetAllArmyRewards</AssemblyName>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.GetAllArmyRewards</AssemblyName>
     <Description>Get all unlocked army rewards and multiple eggs donation rewards at once.</Description>
     <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.GetAllArmyRewards</RootNamespace>
-    <Authors>eradev</Authors>
-    <Product>Get All Army Rewards</Product>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.GetAllArmyRewards</RootNamespace>
+    <Authors>garfieldbanks</Authors>
+    <Product>GetAllArmyRewards</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +21,10 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
   </ItemGroup>
   
   <ItemGroup>

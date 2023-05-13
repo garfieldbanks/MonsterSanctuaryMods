@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using BepInEx.Logging;
-using eradev.monstersanctuary.ModsMenuNS.OptionMenu;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu;
 using UnityEngine;
 
-namespace eradev.monstersanctuary.ModsMenuNS
+namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
 {
     public class ModsMenu
     {

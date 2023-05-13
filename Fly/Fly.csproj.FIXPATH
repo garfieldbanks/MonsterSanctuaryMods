@@ -25,6 +25,10 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>PATH_TO_BASE_GAME_FOLDER\Monster Sanctuary_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>

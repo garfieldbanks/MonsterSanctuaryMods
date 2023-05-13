@@ -1,20 +1,45 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
 
 namespace garfieldbanks.MonsterSanctuary.CombatSpeed
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class CombatSpeedPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.CombatSpeed";
+        public const string ModName = "CombatSpeed";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         [UsedImplicitly]
         private void Awake()
         {
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
+            new Harmony(ModGUID).PatchAll();
+
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         [HarmonyPatch(typeof(OptionsManager), "ChangeCombatSpeed")]
@@ -23,6 +48,11 @@ namespace garfieldbanks.MonsterSanctuary.CombatSpeed
             [UsedImplicitly]
             private static bool Prefix(ref OptionsManager __instance, int direction)
             {
+                if (!_isEnabled.Value)
+                {
+                    return true;
+                }
+
                 __instance.OptionsData.CombatSpeed += direction;
                 if (__instance.OptionsData.CombatSpeed > 8)
                 {
@@ -42,6 +72,11 @@ namespace garfieldbanks.MonsterSanctuary.CombatSpeed
             [UsedImplicitly]
             private static bool Prefix(ref OptionsManager __instance, ref float __result)
             {
+                if (!_isEnabled.Value)
+                {
+                    return true;
+                }
+
                 switch (__instance.OptionsData.CombatSpeed)
                 {
                     case 0:

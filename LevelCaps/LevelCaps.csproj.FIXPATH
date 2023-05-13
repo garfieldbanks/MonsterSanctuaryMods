@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.LevelCaps</AssemblyName>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.LevelCaps</AssemblyName>
     <Description>Custom level cap for your monsters and enemies.</Description>
     <Version>1.0.1</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.LevelCaps</RootNamespace>
-    <Authors>eradev</Authors>
-    <Product>Level Caps</Product>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.LevelCaps</RootNamespace>
+    <Authors>garfieldbanks</Authors>
+    <Product>LevelCaps</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +21,10 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
   </ItemGroup>
   
   <ItemGroup>

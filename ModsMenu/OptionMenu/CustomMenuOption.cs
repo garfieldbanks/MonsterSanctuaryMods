@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace eradev.monstersanctuary.ModsMenuNS.OptionMenu
+namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu
 {
     internal class CustomMenuOption
     {

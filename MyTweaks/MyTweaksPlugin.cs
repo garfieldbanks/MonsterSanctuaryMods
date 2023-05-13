@@ -1,5 +1,7 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 using MonoMod.RuntimeDetour;
@@ -21,20 +23,262 @@ using static UnityEngine.ParticleSystem;
 
 namespace garfieldbanks.MonsterSanctuary.MyTweaks
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class MyTweaksPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.MyTweaks";
+        public const string ModName = "MyTweaks";
+        public const string ModVersion = "1.0.0";
+
+        private const bool LevelBadgeTweak = true;
+        private static ConfigEntry<bool> _levelBadgeTweak;
+        private const bool UnlimitedGold = true;
+        private static ConfigEntry<bool> _unlimitedGold;
+        private const bool UnlimitedItemUse = true;
+        private static ConfigEntry<bool> _unlimitedItemUse;
+        private const bool OpenDoorsTweak = true;
+        private static ConfigEntry<bool> _openDoorsTweak;
+        private const bool BlobKeyTweak = true;
+        private static ConfigEntry<bool> _blobKeyTweak;
+        private const bool MagicalVinesTweak = true;
+        private static ConfigEntry<bool> _magicalVinesTweak;
+        private const bool InvisiblePlatformsTweak = true;
+        private static ConfigEntry<bool> _invisiblePlatformsTweak;
+        private const bool MountsTweak = true;
+        private static ConfigEntry<bool> _mountsTweak;
+        private const bool FlyingSwimmingTweak = true;
+        private static ConfigEntry<bool> _flyingSwimmingTweak;
+        private const bool DarknessTweak = true;
+        private static ConfigEntry<bool> _darknessTweak;
+        private const bool SkillsTweaks = true;
+        private static ConfigEntry<bool> _skillsTweaks;
+        //private const bool UnlearnSkillsTweak = true;
+        //private static ConfigEntry<bool> _unlearnSkillsTweak;
+        //private const bool SkillRequirementsTweak = true;
+        //private static ConfigEntry<bool> _skillRequirementsTweak;
+        //private const bool NegativeSkillPointsTweak = true;
+        //private static ConfigEntry<bool> _negativeSkillPointsTweak;
+        //private const bool UltimateSkillsTweak = true;
+        //private static ConfigEntry<bool> _ultimateSkillsTweak;
+        private const bool RemoveObstaclesTweak = true;
+        private static ConfigEntry<bool> _removeObstaclesTweak;
+        private const bool TorchesTweak = true;
+        private static ConfigEntry<bool> _torchesTweak;
+        private const bool HiddenWallsTweak = true;
+        private static ConfigEntry<bool> _hiddenWallsTweak;
+        private const bool RemoveSwitchMonstersSoundTweak = true;
+        private static ConfigEntry<bool> _removeSwitchMonstersSoundTweak;
+        private const bool KeysTweak = true;
+        private static ConfigEntry<bool> _keysTweak;
+        private const bool WarmUnderwearTweak = true;
+        private static ConfigEntry<bool> _warmUnderwearTweak;
+        private const bool FixBlobForm = true;
+        private static ConfigEntry<bool> _fixBlobForm;
+        private const bool ReplaceMorphWithBlobTweak = true;
+        private static ConfigEntry<bool> _replaceMorphWithBlobTweak;
+
         private static ManualLogSource _log;
         private static bool tempBool;
 
         [UsedImplicitly]
         private void Awake()
         {
+            _levelBadgeTweak = Config.Bind("General", "Level badge tweak", LevelBadgeTweak, "Any level badge can be used to level any monster up to the same level as your current max level monster");
+            _unlimitedGold = Config.Bind("General", "Unlimited gold tweak", UnlimitedGold, "Unlimited gold");
+            _unlimitedItemUse = Config.Bind("General", "Unlimited item use tweak", UnlimitedItemUse, "Unlimited item use");
+            _openDoorsTweak = Config.Bind("General", "Open doors tweak", OpenDoorsTweak, "Doors and sliders are initially open");
+            _blobKeyTweak = Config.Bind("General", "Blob key tweak", BlobKeyTweak, "Blob key is no longer necessary to interact with blob locks");
+            _magicalVinesTweak = Config.Bind("General", "Magical vines tweak", MagicalVinesTweak, "Magical vines automatically open");
+            _invisiblePlatformsTweak = Config.Bind("General", "Invisible platform tweak", InvisiblePlatformsTweak, "Invisible platforms are always visible and tangible");
+            _mountsTweak = Config.Bind("General", "Mounts tweak", MountsTweak, "All mounts are tar mounts and have increased jump height like Gryphonix");
+            _flyingSwimmingTweak = Config.Bind("General", "Flying swimming tweak", FlyingSwimmingTweak, "All flying monsters have improved flying and swimming and all swimmers resist streams");
+            _darknessTweak = Config.Bind("General", "Darkness tweak", DarknessTweak, "You can see in darkness normally");
+            _skillsTweaks = Config.Bind("General", "Skills tweaks", SkillsTweaks, "Skills can now be unlearned the same way you learn them and can go negative");
+            //_unlearnSkillsTweak = Config.Bind("General", "Unlearn skills tweak", UnlearnSkillsTweak, "Skills can now be unlearned the same way you learn them");
+            //_skillRequirementsTweak = Config.Bind("General", "Skill requirements tweak", SkillRequirementsTweak, "No more prerequisites or level requirements for skills");
+            //_negativeSkillPointsTweak = Config.Bind("General", "Negative skills tweak", NegativeSkillPointsTweak, "Skill points can now go negative");
+            //_ultimateSkillsTweak = Config.Bind("General", "Ultimate skills tweak", UltimateSkillsTweak, "Ultimates can now be chosen at any level");
+            _removeObstaclesTweak = Config.Bind("General", "Remove obstacles tweak", RemoveObstaclesTweak, "Diamond blocks, levitatable blocks, green vines and melody walls are removed");
+            _torchesTweak = Config.Bind("General", "Torches tweak", TorchesTweak, "Torches are initialized enkindled");
+            _hiddenWallsTweak = Config.Bind("General", "Hidden walls tweak", HiddenWallsTweak, "Hidden walls are no longer hidden");
+            _removeSwitchMonstersSoundTweak = Config.Bind("General", "Remove annoying sound tweak", RemoveSwitchMonstersSoundTweak, "Removed annoying sound when switching monsters in the menu screen");
+            _keysTweak = Config.Bind("General", "Keys tweak", KeysTweak, "Keys are no longer required to open any doors");
+            _warmUnderwearTweak = Config.Bind("General", "Warm underwear tweak", WarmUnderwearTweak, "Warm underwear is no longer required to enter cold water");
+            _fixBlobForm = Config.Bind("General", "Fix blob form", FixBlobForm, "Fix blob form");
+            _replaceMorphWithBlobTweak = Config.Bind("General", "Replace morph with blob", ReplaceMorphWithBlobTweak, "Morph ball displays as a blob");
+
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Level Badge - Enabled",
+                    () => $"{_levelBadgeTweak.Value}",
+                    _ => _levelBadgeTweak.Value = !_levelBadgeTweak.Value,
+                    setDefaultValueFunc: () => _levelBadgeTweak.Value = LevelBadgeTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Unlimited Gold - Enabled",
+                    () => $"{_unlimitedGold.Value}",
+                    _ => _unlimitedGold.Value = !_unlimitedGold.Value,
+                    setDefaultValueFunc: () => _unlimitedGold.Value = UnlimitedGold);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Unlimited Items - Enabled",
+                    () => $"{_unlimitedItemUse.Value}",
+                    _ => _unlimitedItemUse.Value = !_unlimitedItemUse.Value,
+                    setDefaultValueFunc: () => _unlimitedItemUse.Value = UnlimitedItemUse);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Open Doors - Enabled",
+                    () => $"{_openDoorsTweak.Value}",
+                    _ => _openDoorsTweak.Value = !_openDoorsTweak.Value,
+                    setDefaultValueFunc: () => _openDoorsTweak.Value = OpenDoorsTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Blob Key - Enabled",
+                    () => $"{_blobKeyTweak.Value}",
+                    _ => _blobKeyTweak.Value = !_blobKeyTweak.Value,
+                    setDefaultValueFunc: () => _blobKeyTweak.Value = BlobKeyTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Magical Vines - Enabled",
+                    () => $"{_magicalVinesTweak.Value}",
+                    _ => _magicalVinesTweak.Value = !_magicalVinesTweak.Value,
+                    setDefaultValueFunc: () => _magicalVinesTweak.Value = MagicalVinesTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Visible Platforms - Enabled",
+                    () => $"{_invisiblePlatformsTweak.Value}",
+                    _ => _invisiblePlatformsTweak.Value = !_invisiblePlatformsTweak.Value,
+                    setDefaultValueFunc: () => _invisiblePlatformsTweak.Value = InvisiblePlatformsTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Mounts - Enabled",
+                    () => $"{_mountsTweak.Value}",
+                    _ => _mountsTweak.Value = !_mountsTweak.Value,
+                    setDefaultValueFunc: () => _mountsTweak.Value = MountsTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Flying / Swimming - Enabled",
+                    () => $"{_flyingSwimmingTweak.Value}",
+                    _ => _flyingSwimmingTweak.Value = !_flyingSwimmingTweak.Value,
+                    setDefaultValueFunc: () => _flyingSwimmingTweak.Value = FlyingSwimmingTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Darkness - Enabled",
+                    () => $"{_darknessTweak.Value}",
+                    _ => _darknessTweak.Value = !_darknessTweak.Value,
+                    setDefaultValueFunc: () => _darknessTweak.Value = DarknessTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Skills Tweaks - Enabled",
+                    () => $"{_skillsTweaks.Value}",
+                    _ => _skillsTweaks.Value = !_skillsTweaks.Value,
+                    setDefaultValueFunc: () => _skillsTweaks.Value = SkillsTweaks);
+
+                //ModsMenu.TryAddOption(
+                //    pluginName,
+                //    "Unlearn Skills - Enabled",
+                //    () => $"{_unlearnSkillsTweak.Value}",
+                //    _ => _unlearnSkillsTweak.Value = !_unlearnSkillsTweak.Value,
+                //    setDefaultValueFunc: () => _unlearnSkillsTweak.Value = UnlearnSkillsTweak);
+
+                //ModsMenu.TryAddOption(
+                //    pluginName,
+                //    "Skill Requirements - Enabled",
+                //    () => $"{_skillRequirementsTweak.Value}",
+                //    _ => _skillRequirementsTweak.Value = !_skillRequirementsTweak.Value,
+                //    setDefaultValueFunc: () => _skillRequirementsTweak.Value = SkillRequirementsTweak);
+
+                //ModsMenu.TryAddOption(
+                //    pluginName,
+                //    "Negative Skill Points - Ena..",
+                //    () => $"{_negativeSkillPointsTweak.Value}",
+                //    _ => _negativeSkillPointsTweak.Value = !_negativeSkillPointsTweak.Value,
+                //    setDefaultValueFunc: () => _negativeSkillPointsTweak.Value = NegativeSkillPointsTweak);
+
+                //ModsMenu.TryAddOption(
+                //    pluginName,
+                //    "Ultimate Skills - Enabled",
+                //    () => $"{_ultimateSkillsTweak.Value}",
+                //    _ => _ultimateSkillsTweak.Value = !_ultimateSkillsTweak.Value,
+                //    setDefaultValueFunc: () => _ultimateSkillsTweak.Value = UltimateSkillsTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Remove Obstacles - Ena..",
+                    () => $"{_removeObstaclesTweak.Value}",
+                    _ => _removeObstaclesTweak.Value = !_removeObstaclesTweak.Value,
+                    setDefaultValueFunc: () => _removeObstaclesTweak.Value = RemoveObstaclesTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Torches - Enabled",
+                    () => $"{_torchesTweak.Value}",
+                    _ => _torchesTweak.Value = !_torchesTweak.Value,
+                    setDefaultValueFunc: () => _torchesTweak.Value = TorchesTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Hidden Walls - Enabled",
+                    () => $"{_hiddenWallsTweak.Value}",
+                    _ => _hiddenWallsTweak.Value = !_hiddenWallsTweak.Value,
+                    setDefaultValueFunc: () => _hiddenWallsTweak.Value = HiddenWallsTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Remove Sound - Enabled",
+                    () => $"{_removeSwitchMonstersSoundTweak.Value}",
+                    _ => _removeSwitchMonstersSoundTweak.Value = !_removeSwitchMonstersSoundTweak.Value,
+                    setDefaultValueFunc: () => _removeSwitchMonstersSoundTweak.Value = RemoveSwitchMonstersSoundTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Keys - Enabled",
+                    () => $"{_keysTweak.Value}",
+                    _ => _keysTweak.Value = !_keysTweak.Value,
+                    setDefaultValueFunc: () => _keysTweak.Value = KeysTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Warm Underwear - Enabled",
+                    () => $"{_warmUnderwearTweak.Value}",
+                    _ => _warmUnderwearTweak.Value = !_warmUnderwearTweak.Value,
+                    setDefaultValueFunc: () => _warmUnderwearTweak.Value = WarmUnderwearTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Fix Blob Form - Enabled",
+                    () => $"{_fixBlobForm.Value}",
+                    _ => _fixBlobForm.Value = !_fixBlobForm.Value,
+                    setDefaultValueFunc: () => _fixBlobForm.Value = FixBlobForm);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Replace Morph Ball - Ena..",
+                    () => $"{_replaceMorphWithBlobTweak.Value}",
+                    _ => _replaceMorphWithBlobTweak.Value = !_replaceMorphWithBlobTweak.Value,
+                    setDefaultValueFunc: () => _replaceMorphWithBlobTweak.Value = ReplaceMorphWithBlobTweak);
+            };
+
             _log = Logger;
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         [HarmonyPatch(typeof(BlobFormAbility), "StartAction")]
@@ -43,7 +287,15 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
-                __instance.IsMorphBall = false;
+                if (_replaceMorphWithBlobTweak.Value)
+                {
+                    __instance.IsMorphBall = false;
+                }
+
+                if (!_fixBlobForm.Value)
+                {
+                    return true;
+                }
 
                 if (PlayerController.Instance.BlobForm && !__instance.CanTransformBack())
                 {
@@ -72,6 +324,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
+                if (!_fixBlobForm.Value)
+                {
+                    return true;
+                }
+
                 FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
                 FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
                 FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -107,6 +364,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
+                if (!_fixBlobForm.Value)
+                {
+                    return true;
+                }
+
                 //GameStateManager.Instance.EndCinematic(__instance);
                 PlayerController.Instance.Physics.IsLifted = false;
                 return false;
@@ -119,6 +381,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BlobFormAbility __instance)
             {
+                if (!_fixBlobForm.Value)
+                {
+                    return true;
+                }
+
                 if (__instance.CanTransformBack())
                 {
                     PlayerController.Instance.BlobForm = false;
@@ -136,7 +403,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(AudioClip clip)
             {
-                if (clip == SFXController.Instance.SFXMonsterTurn)
+                if (_removeSwitchMonstersSoundTweak.Value && clip == SFXController.Instance.SFXMonsterTurn)
                 {
                     return false;
                 }
@@ -150,6 +417,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref bool __result)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 __result = true;
                 return false;
             }
@@ -161,6 +433,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref bool __result)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 __result = true;
                 return false;
             }
@@ -172,6 +449,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref SkillManager __instance, ref List<int> actions, ref List<int> parentActions, ref List<PassiveSkillEntry> passives)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 __instance.Actions.Clear();
                 __instance.ParentActions.Clear();
                 __instance.Passives.Clear();
@@ -221,6 +503,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix()
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 tempBool = PlayerController.Instance.NewGamePlus;
                 PlayerController.Instance.NewGamePlus = true;
                 return true;
@@ -229,6 +516,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix()
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return;
+                }
+
                 PlayerController.Instance.NewGamePlus = tempBool;
             }
         }
@@ -239,6 +531,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BaseAction __instance, ref bool __result, Monster monster)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 if (__instance.GetComponent<ActionShieldBurst>() != null && monster.Shield == 0)
                 {
                     __result = false;
@@ -308,6 +605,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref SkillManager __instance)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 __instance.ParentActions.Clear();
                 SkillTree[] skillTrees = __instance.SkillTrees;
                 foreach (SkillTree skillTree in skillTrees)
@@ -357,6 +659,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref int __result)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 __result = 0;
                 return false;
             }
@@ -368,6 +675,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref bool isLearnable)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 isLearnable = true;
                 return true;
             }
@@ -375,6 +687,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref SkillTreeIcon __instance)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return;
+                }
+
                 __instance.UpperConnector.gameObject.SetActive(false);
                 __instance.HorizontalConnector.gameObject.SetActive(false);
                 __instance.LowerConnector.gameObject.SetActive(false);
@@ -387,6 +704,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref SkillMenu __instance)
             {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
                 FieldInfo CurrentSelected = __instance.GetType().GetField("CurrentSelected", BindingFlags.NonPublic | BindingFlags.Instance);
                 FieldInfo monster = __instance.GetType().GetField("monster", BindingFlags.NonPublic | BindingFlags.Instance);
                 if ((ISelectionViewSelectable)CurrentSelected.GetValue(__instance) is SkillTreeIcon)
@@ -433,6 +755,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref Monster monster, ref bool __result)
             {
+                if (!_levelBadgeTweak.Value)
+                {
+                    return true;
+                }
+
                 __result = monster.Level < PlayerController.Instance.Monsters.GetHighestLevel();
                 return false;
             }
@@ -444,6 +771,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix()
             {
+                if (!_unlimitedGold.Value)
+                {
+                    return true;
+                }
+
                 PlayerController.Instance.Gold = 999999999;
                 return true;
             }
@@ -453,8 +785,13 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private class InventoryManagerRemoveItemPatch
         {
             [UsedImplicitly]
-            private static bool Prefix()
+            private static bool Prefix(InventoryManager __instance, ref BaseItem item)
             {
+                if (!_unlimitedItemUse.Value || (item != null && item.GetComponent<Equipment>() != null))
+                {
+                    return true;
+                }
+
                 return false;
             }
         }
@@ -465,6 +802,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BoolSwitchDoor __instance)
             {
+                if (!_openDoorsTweak.Value)
+                {
+                    return true;
+                }
+
                 if (__instance.BoolSwitchName != null && __instance.BoolSwitchName != "UWW3SlidingGate" && __instance.BoolSwitchName != "UWW4SlidingGate")
                 {
                     __instance.IsOpenInitially = true;
@@ -490,6 +832,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref BoolSwitchDoor __instance)
             {
+                if (!_openDoorsTweak.Value)
+                {
+                    return true;
+                }
+
                 if (__instance.BoolSwitchName != null && __instance.BoolSwitchName != "UWW3SlidingGate" && __instance.BoolSwitchName != "UWW4SlidingGate")
                 {
                     FieldInfo IsOpen = __instance.GetType().GetField("IsOpen", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -514,6 +861,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref InventoryItem __result)
             {
+                if (!_keysTweak.Value)
+                {
+                    return;
+                }
+
                 if (__result == null)
                 {
                     __result = new InventoryItem();
@@ -527,11 +879,18 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref InventoryManager __instance, EUniqueItemId uniqueID, ref bool __result)
             {
-                if (uniqueID == EUniqueItemId.BlobKey || uniqueID == EUniqueItemId.WarmUnderwear)
+                if (_warmUnderwearTweak.Value && uniqueID == EUniqueItemId.WarmUnderwear)
                 {
                     __result = true;
                     return false;
                 }
+
+                if (_blobKeyTweak.Value && uniqueID == EUniqueItemId.BlobKey)
+                {
+                    __result = true;
+                    return false;
+                }
+
                 return true;
             }
         }
@@ -542,6 +901,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref bool __result)
             {
+                if (!_magicalVinesTweak.Value)
+                {
+                    return true;
+                }
+
                 __result = true;
                 return false;
             }
@@ -553,7 +917,10 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref ObstacleTileWall __instance)
             {
-                PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                if (_openDoorsTweak.Value || _removeObstaclesTweak.Value || _hiddenWallsTweak.Value)
+                {
+                    PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                }
             }
         }
 
@@ -563,7 +930,10 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref Obstacle __instance)
             {
-                PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                if (_openDoorsTweak.Value || _removeObstaclesTweak.Value || _hiddenWallsTweak.Value)
+                {
+                    PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
+                }
             }
         }
 
@@ -573,6 +943,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref LevitatableObject __instance)
             {
+                if (!_removeObstaclesTweak.Value)
+                {
+                    return;
+                }
+
                 PositionTween.StartTween(__instance.gameObject, new Vector3(0f, -88f, 0f), new Vector3(0f, -88f, 0f), 0f);
                 __instance.IsLevitated = true;
             }
@@ -584,6 +959,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref ObstacleTendrils __instance)
             {
+                if (!_removeObstaclesTweak.Value)
+                {
+                    return;
+                }
+
                 MethodInfo Disappear = __instance.GetType().GetMethod("Disappear", BindingFlags.NonPublic | BindingFlags.Instance);
                 Disappear.Invoke(__instance, new object[] { });
             }
@@ -595,6 +975,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref Torch __instance)
             {
+                if (!_torchesTweak.Value)
+                {
+                    return;
+                }
+
                 __instance.TriggeredByAttack(null);
             }
         }
@@ -605,6 +990,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Postfix(ref MelodyWall __instance)
             {
+                if (!_removeObstaclesTweak.Value)
+                {
+                    return;
+                }
+
                 __instance.DestroyObstacle();
             }
         }
@@ -615,6 +1005,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref InvisiblePlatform __instance)
             {
+                if (!_invisiblePlatformsTweak.Value)
+                {
+                    return true;
+                }
+
                 if (!(GameController.Instance == null))
                 {
                     __instance.PlatformRoot.SetActive(true);
@@ -629,6 +1024,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix()
             {
+                if (!_mountsTweak.Value)
+                {
+                    return true;
+                }
+
                 MountAbility component = PlayerController.Instance.Follower.Monster.ExploreAction.GetComponent<MountAbility>();
                 if (component != null)
                 {
@@ -645,6 +1045,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref FlyingAbility __instance)
             {
+                if (!_flyingSwimmingTweak.Value)
+                {
+                    return true;
+                }
+
                 __instance.FlyDuration = 0.76f;
                 __instance.LiftVelocity = 71;
                 return true;
@@ -657,6 +1062,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix()
             {
+                if (!_flyingSwimmingTweak.Value)
+                {
+                    return true;
+                }
+
                 FlyingAbility component = PlayerController.Instance.Follower.Monster.ExploreAction.GetComponent<FlyingAbility>();
                 if (component != null)
                 {
@@ -673,6 +1083,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix()
             {
+                if (!_flyingSwimmingTweak.Value)
+                {
+                    return true;
+                }
+
                 SwimmingAbility component = PlayerController.Instance.Follower.Monster.ExploreAction.GetComponent<SwimmingAbility>();
                 if (component != null)
                 {
@@ -688,6 +1103,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref DarkRoomLightManager __instance)
             {
+                if (!_darknessTweak.Value)
+                {
+                    return true;
+                }
+
                 LightAbility component2 = PlayerController.Instance.Follower.Monster.ExploreAction.GetComponent<LightAbility>();
                 MountAbility component3 = PlayerController.Instance.Follower.Monster.ExploreAction.GetComponent<MountAbility>();
                 if (component2 == null && component3 == null || component3 != null && !component3.SonarMount)

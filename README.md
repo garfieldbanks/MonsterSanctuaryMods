@@ -1,5 +1,5 @@
 # Monster Sanctuary Mods
-DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanctuary).
+DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanctuary). All mods can be enabled/disabled in the in-game mods menu.
 
 ## Installation
 - Requires [BepInEx 5](https://github.com/BepInEx/BepInEx).
@@ -36,6 +36,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Fixes the issue of the original mod which prevented certain essential items from being received.
 - Rewards from monster battles and the items in chests are randomly selected from items you don't already have. Once you have all items, you'll receive items with the lowest quantity in your inventory.
 ### MyTweaks
+- These tweaks can be individually enabled/disabled in the in-game mods menu.
 - Any level badge can be used to level any monster up to the same level as your current max level monster.
 - Unlimited gold and unlimited item use.
 - Doors and sliders are initially open. The two doors necessary to trap the champion monster in the underworld can still be toggled open & closed. Everything else can only be opened (if installed mid playthrough), not closed. So feel free to interact with every switch you see to see if it triggers any events. Most of the time it will just do nothing because the door is already open.
@@ -64,7 +65,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ### Display Unhatched Eggs
 - Display a \* before unhatched eggs' name.
 
-### Display Valid Monsters Evolution
+### Show Only Valid Evolution
 - Only display valid monsters when choosing a Catalyst target.
 
 ### Get All Army Rewards
@@ -72,25 +73,29 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 
 ### Level Caps
 - Custom level cap for your monsters and enemies.
-- `I changed this to set monster level to current player max monster level.`
+- Also has an in-game option to set monster level to current player max monster level.
 
 ### NG+ Options
 - Various options when starting a New Game+
-- `I added options to clear inventory and monsters.`
+- Also has options to clear inventory and monsters.
 
 ### Random Randomizer
-- Randomize random encounters and chests' content in Randomizer mode.
-- `I added a fix to check if the item is null and the chest has no gold to prevent essential items being randomized.`
+- Same mod as the one by eradev except for a few bug fixes.
+- Fixes the issue of the original mod which prevented blog burg chambers from opening.
+- Fixes the issue of the original mod which prevented certain essential items from being received.
 
 ### Shift Color Name
 - Change the monster name's color depending of its shift in certain screens.
-- `I added a fix for unshifted monsters when donating to the monster army.`
+- Fixes a bug of the original mod for unshifted monsters when donating to the monster army.
 
 ### Start Button Confirm
 - Allow pressing a button to move the cursor of the rename window to the confirm button.
 
 ### Hatch Max Level Eggs
 - Changes the level eggs are hatched at to equal your highest level monster, instead of highest level monster minus two.
+
+### Mods Menu
+- All my mods use this to be able to toggle on/off in-game.
 
 ### Credits
 - https://github.com/Eradev/MonsterSanctuaryMods

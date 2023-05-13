@@ -1,16 +1,16 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.DisplayValidMonstersEvolution</AssemblyName>
-    <Description>Only display valid monsters when choosing a Catalyst target.</Description>
-    <Version>1.0.0</Version>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.RandomRandomizer</AssemblyName>
+    <Description>Randomize random encounters and chests' content in Randomizer mode.</Description>
+    <Version>1.1.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.DisplayValidMonstersEvolution</RootNamespace>
-    <Authors>eradev</Authors>
-    <Product>Display Valid Monsters Evolution</Product>
-    <PackageId>eradev.monstersanctuary.DisplayValidMonstersEvolution</PackageId>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.RandomRandomizer</RootNamespace>
+    <PackageId>garfieldbanks.MonsterSanctuary.RandomRandomizer</PackageId>
+    <Authors>garfieldbanks</Authors>
+    <Product>RandomRandomizer</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +22,10 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
   </ItemGroup>
   
   <ItemGroup>

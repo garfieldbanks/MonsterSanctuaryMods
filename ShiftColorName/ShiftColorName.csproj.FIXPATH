@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.ShiftColorName</AssemblyName>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.ShiftColorName</AssemblyName>
     <Description>Change the monster name's color depending of its shift in certain screens.</Description>
     <Version>1.0.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.ShiftColorName</RootNamespace>
-    <Authors>eradev</Authors>
-    <Product>Shift Color Name</Product>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.ShiftColorName</RootNamespace>
+    <Authors>garfieldbanks</Authors>
+    <Product>ShiftColorName</Product>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +21,10 @@
   
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
   </ItemGroup>
   
   <ItemGroup>

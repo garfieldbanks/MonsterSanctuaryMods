@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.DisplayUnhatchedEggs</AssemblyName>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.DisplayUnhatchedEggs</AssemblyName>
     <Description>Display a star before unhatched eggs' name.</Description>
     <Version>1.0.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.DisplayUnhatchedEggs</RootNamespace>
-    <Authors>eradev</Authors>
-    <Product>Display Unhatched Eggs</Product>
-    <PackageId>eradev.monstersanctuary.DisplayUnhatchedEggs</PackageId>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.DisplayUnhatchedEggs</RootNamespace>
+    <Authors>garfieldbanks</Authors>
+    <Product>DisplayUnhatchedEggs</Product>
+    <PackageId>garfieldbanks.MonsterSanctuary.DisplayUnhatchedEggs</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,8 +25,16 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\ModsMenu\ModsMenu.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>PATH_TO_BASE_GAME_FOLDER\Monster Sanctuary_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
+  
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy /Y &quot;$(TargetPath)&quot; &quot;PATH_TO_BASE_GAME_FOLDER\BepInEx\plugins\$(TargetFileName)&quot;" />
+  </Target>
 </Project>

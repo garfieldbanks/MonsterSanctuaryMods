@@ -1,16 +1,25 @@
 ﻿using System.Threading.Tasks;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace eradev.monstersanctuary.NGPlusOptions
+namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    [UsedImplicitly]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class NGPlusOptionsPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.NGPlusOptions";
+        public const string ModName = "NG+ StartingOptions";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         private static SaveGameMenu _saveGameMenu;
         private static int _selectedDifficultyIndex;
         private static bool _ngPlusOptionsDone;
@@ -21,11 +30,25 @@ namespace eradev.monstersanctuary.NGPlusOptions
         [UsedImplicitly]
         private void Awake()
         {
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
+
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
             _log = Logger;
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static void AskUnshiftMonsters()
@@ -150,7 +173,7 @@ namespace eradev.monstersanctuary.NGPlusOptions
             [UsedImplicitly]
             private static bool Prefix(ref SaveGameMenu __instance, int index)
             {
-                if (!PlayerController.Instance.NewGamePlus || _ngPlusOptionsDone)
+                if (!_isEnabled.Value || !PlayerController.Instance.NewGamePlus || _ngPlusOptionsDone)
                 {
                     _ngPlusOptionsDone = false;
 

@@ -1,20 +1,44 @@
 ﻿using System;
 using System.Linq;
 using BepInEx;
+using BepInEx.Configuration;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 
-namespace eradev.monstersanctuary.DisplayValidMonstersEvolution
+namespace garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
-    public class DisplayValidMonstersEvolutionPlugin : BaseUnityPlugin
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
+    public class ShowOnlyValidEvolutionsPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions";
+        public const string ModName = "ShowOnlyValidEvolutions";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         [UsedImplicitly]
         private void Awake()
         {
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
+            new Harmony(ModGUID).PatchAll();
+
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static Catalyst CurrentCatalyst()
@@ -28,7 +52,7 @@ namespace eradev.monstersanctuary.DisplayValidMonstersEvolution
             [UsedImplicitly]
             private static bool Prefix(ref MonsterSelector __instance, ref int ___totalPages)
             {
-                if (__instance.CurrentSelectType != MonsterSelector.MonsterSelectType.SelectEvolveTarget)
+                if (!_isEnabled.Value || __instance.CurrentSelectType != MonsterSelector.MonsterSelectType.SelectEvolveTarget)
                 {
                     return true;
                 }
@@ -54,7 +78,7 @@ namespace eradev.monstersanctuary.DisplayValidMonstersEvolution
             [UsedImplicitly]
             private static bool Prefix(ref MonsterSelector __instance, int ___currentPage, int ___totalPages)
             {
-                if (__instance.CurrentSelectType != MonsterSelector.MonsterSelectType.SelectEvolveTarget)
+                if (!_isEnabled.Value || __instance.CurrentSelectType != MonsterSelector.MonsterSelectType.SelectEvolveTarget)
                 {
                     return true;
                 }

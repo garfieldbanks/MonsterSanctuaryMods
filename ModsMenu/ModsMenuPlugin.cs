@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
-using eradev.monstersanctuary.ModsMenuNS.Extensions;
-using eradev.monstersanctuary.ModsMenuNS.OptionMenu;
+using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace eradev.monstersanctuary.ModsMenuNS
+namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ModsMenuPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.ModsMenu";
+        public const string ModName = "Mods Menu";
+        public const string ModVersion = "1.0.0";
+
+        private static ManualLogSource _log;
+
         private static OptionsMenu _optionsMenu;
         private static MenuListItem _modsCategory;
         private static MenuList _modsPagination;
@@ -37,9 +44,9 @@ namespace eradev.monstersanctuary.ModsMenuNS
         {
             ModsMenu.Inst.SetLogger(Logger);
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static void CreateModCategoryTab()

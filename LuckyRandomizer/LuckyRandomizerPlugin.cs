@@ -6,19 +6,23 @@ using System.Threading;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using eradev.monstersanctuary.ModsMenuNS;
-using eradev.monstersanctuary.ModsMenuNS.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace garfieldbanks.monstersanctuary.LuckyRandomizer
+namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
 {
-    [BepInDependency("eradev.monstersanctuary.ModsMenu")]
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class LuckyRandomizerPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.LuckyRandomizer";
+        public const string ModName = "LuckyRandomizer";
+        public const string ModVersion = "1.0.0";
+
         private static readonly System.Random Rand = new();
         private static ManualLogSource _log;
 
@@ -34,6 +38,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
         private static ConfigEntry<string> _monstersBlacklist;
 
         private const bool RandomizedChestsEnabledDefault = true;
+        private const bool NotRelicChestsDefault = true;
         private const float GoldChanceDefault = 0.0f;
         private const int MinGoldDefault = 5;
         private const int MaxGoldDefault = 50;
@@ -45,6 +50,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
         private const bool DisableEggsDefault = false;
 
         private static ConfigEntry<bool> _randomizeChestsEnabled;
+        private static ConfigEntry<bool> _notRelicChests;
         private static ConfigEntry<float> _goldChance;
         private static ConfigEntry<int> _minGold;
         private static ConfigEntry<int> _maxGold;
@@ -65,7 +71,9 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
             _randomizeMonstersEnabled = Config.Bind("Randomized Monsters", "Enabled", RandomizedMonstersEnabledDefault, "Randomize monsters");
             _monstersBlacklist = Config.Bind("Randomized Monsters", "Blacklist", MonstersBlacklistDefault, "Blacklisted monsters ID");
 
+
             _randomizeChestsEnabled = Config.Bind("Randomized Chests", "Enabled", RandomizedChestsEnabledDefault, "Randomize chests");
+            _notRelicChests = Config.Bind("Randomized Chests", "Not relic chests", NotRelicChestsDefault, "Do not randomize relic chests");
             _goldChance = Config.Bind("Randomized Chests", "Chance for gold", GoldChanceDefault, "Chance to get gold in chests (0.0 = never, 1.0 = always)");
             _minGold = Config.Bind("Randomized Chests", "Minimum gold", MinGoldDefault, "Minimum value of gold in chests (x100, must be > 0)");
             _maxGold = Config.Bind("Randomized Chests", "Maximum gold", MaxGoldDefault, "Minimum value of gold in chests (x100, must be > 0)");
@@ -100,7 +108,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
             _goldChance.Value = _goldChance.Value.Clamp(0.0f, 1.0f);
 
-            const string pluginName = "RRandomizer";
+            const string pluginName = ModName;
 
             ModsMenu.RegisterOptionsEvt += (_, _) =>
             {
@@ -113,7 +121,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "Randomize monsters",
+                    "Random monsters",
                     () => $"{_randomizeMonstersEnabled.Value}",
                     _ => _randomizeMonstersEnabled.Value = !_randomizeMonstersEnabled.Value,
                     determineDisabledFunc: () => !_isEnabled.Value,
@@ -121,11 +129,19 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "Randomize chests",
+                    "Random chests",
                     () => $"{_randomizeChestsEnabled.Value}",
                     _ => _randomizeChestsEnabled.Value = !_randomizeChestsEnabled.Value,
                     determineDisabledFunc: () => !_isEnabled.Value,
                     setDefaultValueFunc: () => _randomizeChestsEnabled.Value = RandomizedChestsEnabledDefault);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Not relic chests",
+                    () => $"{_notRelicChests.Value}",
+                    _ => _notRelicChests.Value = !_notRelicChests.Value,
+                    determineDisabledFunc: () => !_isEnabled.Value,
+                    setDefaultValueFunc: () => _notRelicChests.Value = NotRelicChestsDefault);
 
                 ModsMenu.TryAddOption(
                     pluginName,
@@ -155,7 +171,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "Chance for gold",
+                    "Gold chance",
                     () => $"{Math.Round(_goldChance.Value * 100f, 1)}%",
                     direction => _goldChance.Value = (_goldChance.Value + direction * 0.01f).Clamp(0.0f, 1.0f),
                     () => ModsMenu.CreateOptionsPercentRange(0.0f, 1.0f, 0.1f),
@@ -201,7 +217,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "+3 item unlock level",
+                    "+3 unlock level",
                     () => $"{_tier3LevelUnlock.Value}",
                     direction => _tier3LevelUnlock.Value = (_tier3LevelUnlock.Value + direction).Clamp(1, GameController.LevelCap),
                     () => ModsMenu.CreateOptionsIntRange(1, GameController.LevelCap, 5),
@@ -211,7 +227,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "+4 item unlock level",
+                    "+4 unlock level",
                     () => $"{_tier4LevelUnlock.Value}",
                     direction => _tier4LevelUnlock.Value = (_tier4LevelUnlock.Value + direction).Clamp(1, GameController.LevelCap),
                     () => ModsMenu.CreateOptionsIntRange(1, GameController.LevelCap, 5),
@@ -221,7 +237,7 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
 
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "+5 item unlock level",
+                    "+5 unlock level",
                     () => $"{_tier5LevelUnlock.Value}",
                     direction => _tier5LevelUnlock.Value = (_tier5LevelUnlock.Value + direction).Clamp(1, GameController.LevelCap),
                     () => ModsMenu.CreateOptionsIntRange(1, GameController.LevelCap, 5),
@@ -230,9 +246,9 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                     setDefaultValueFunc: () => _tier5LevelUnlock.Value = Tier5LevelUnlockDefault);
             };
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static Tuple<GameObject, int> GetLowestQuantityItem()
@@ -529,9 +545,14 @@ namespace garfieldbanks.monstersanctuary.LuckyRandomizer
                     }
                 }
 
+                FieldInfo relicModeRelic = __instance.GetType().GetField("relicModeRelic", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (__instance.Item == null && __instance.Gold == 0)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Item is null and has no gold");
+                }
+                else if (_notRelicChests.Value && ((Equipment)relicModeRelic.GetValue(__instance)) != null)
+                {
+                    _log.LogDebug("ChestRandomizer ignore: Relic chest");
                 }
                 else if (__instance.BraveryChest)
                 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace eradev.monstersanctuary.ModsMenuNS.Extensions
+namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions
 {
     public static class NumberExtensions
     {

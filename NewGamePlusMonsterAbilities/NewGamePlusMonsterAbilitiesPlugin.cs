@@ -1,5 +1,7 @@
 ﻿using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -7,15 +9,37 @@ using static MonsterSelector;
 
 namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterAbilities
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class NewGamePlusMonsterAbilitiesPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.NewGamePlusMonsterAbilities";
+        public const string ModName = "NG+ MonsterAbilities";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = true;
+        private static ConfigEntry<bool> _isEnabled;
+
         [UsedImplicitly]
         private void Awake()
         {
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
+            new Harmony(ModGUID).PatchAll();
+
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         [HarmonyPatch(typeof(MonsterSelector), "UpdateDisabledStatus")]
@@ -24,6 +48,11 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterAbilities
             [UsedImplicitly]
             private static bool Prefix(ref MonsterSelector __instance, MonsterSelectorView monsterView)
             {
+                if (!_isEnabled.Value)
+                {
+                    return true;
+                }
+
                 if (__instance.CurrentSelectType == MonsterSelectType.SelectFollower && PlayerController.Instance.NewGamePlus && !GameModeManager.Instance.BraveryMode)
                 {
                     //monsterView.SetDisabled(!ProgressManager.Instance.NGPlusCanUseMonsterAbility(monsterView.Monster));

@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <AssemblyName>eradev.monstersanctuary.ModsMenu</AssemblyName>
+    <AssemblyName>garfieldbanks.MonsterSanctuary.ModsMenu</AssemblyName>
     <Description>Library that adds a category in the options for mods.</Description>
     <Version>1.0.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>eradev.monstersanctuary.ModsMenuNS</RootNamespace>
-    <Authors>eradev</Authors>
-    <Product>Mods Menu</Product>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.ModsMenuNS</RootNamespace>
+    <Authors>garfieldbanks</Authors>
+    <Product>ModsMenu</Product>
   </PropertyGroup>
 
   <ItemGroup>

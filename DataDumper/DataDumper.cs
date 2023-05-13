@@ -3,15 +3,25 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
 using HarmonyLib;
 using JetBrains.Annotations;
 
-namespace eradev.monstersanctuary.DataDumper
+namespace garfieldbanks.MonsterSanctuary.DataDumper
 {
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class DataDumper : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.DataDumper";
+        public const string ModName = "DataDumper";
+        public const string ModVersion = "1.0.0";
+
+        private const bool IsEnabledDefault = false;
+        private static ConfigEntry<bool> _isEnabled;
+
         // ReSharper disable once NotAccessedField.Local
         private static ManualLogSource _log;
 
@@ -20,9 +30,23 @@ namespace eradev.monstersanctuary.DataDumper
         {
             _log = Logger;
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            const string pluginName = ModName;
+
+            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Enabled",
+                    () => $"{_isEnabled.Value}",
+                    _ => _isEnabled.Value = !_isEnabled.Value,
+                    setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
+            };
+
+            new Harmony(ModGUID).PatchAll();
+
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static void DumpMapData()
@@ -125,6 +149,11 @@ namespace eradev.monstersanctuary.DataDumper
             [UsedImplicitly]
             private static void Postfix()
             {
+                if (!_isEnabled.Value)
+                {
+                    return;
+                }
+
                 DumpMapData();
                 DumpItemsData();
                 DumpMonstersData();

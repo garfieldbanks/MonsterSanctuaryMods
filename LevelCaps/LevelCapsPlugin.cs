@@ -2,26 +2,32 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using eradev.monstersanctuary.ModsMenuNS;
-using eradev.monstersanctuary.ModsMenuNS.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
 using HarmonyLib;
 using JetBrains.Annotations;
 
-namespace eradev.monstersanctuary.LevelCaps
+namespace garfieldbanks.MonsterSanctuary.LevelCaps
 {
-    [BepInDependency("eradev.monstersanctuary.ModsMenu")]
-    [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+    [BepInDependency("garfieldbanks.MonsterSanctuary.ModsMenu")]
+    [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class LevelCapsPlugin : BaseUnityPlugin
     {
+        public const string ModGUID = "garfieldbanks.MonsterSanctuary.LevelCaps";
+        public const string ModName = "LevelCaps";
+        public const string ModVersion = "1.0.0";
+
         private static int _defaultMaxLevel;
 
         private static ManualLogSource _log;
 
         private const bool IsEnabledDefault = true;
+        private const bool MaxMonsterMatchPlayerDefault = true;
         private const int MaxLevelSelfDefault = 42;
         private const int MaxLevelEnemyDefault = 42;
 
         private static ConfigEntry<bool> _isEnabled;
+        private static ConfigEntry<bool> _maxMonsterMatchPlayer;
         private static ConfigEntry<int> _maxLevelSelf;
         private static ConfigEntry<int> _maxLevelEnemy;
 
@@ -31,6 +37,7 @@ namespace eradev.monstersanctuary.LevelCaps
             _log = Logger;
 
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
+            _maxMonsterMatchPlayer = Config.Bind("General", "Monster level match player level", MaxMonsterMatchPlayerDefault, "Set monster level to current player max monster level");
             _maxLevelSelf = Config.Bind("General", "Level cap self", MaxLevelSelfDefault, "Level cap for your monsters (1 ~ 99)");
             _maxLevelEnemy = Config.Bind("General", "Level cap enemies", MaxLevelEnemyDefault, "Level cap for enemies (Doesn't affect Infinity arena) (1 ~ 99)");
 
@@ -38,10 +45,12 @@ namespace eradev.monstersanctuary.LevelCaps
             _maxLevelSelf.Value = _maxLevelSelf.Value.Clamp(1, 99);
             _maxLevelEnemy.Value = _maxLevelEnemy.Value.Clamp(1, 99);
 
+            const string pluginName = ModName;
+
             ModsMenu.RegisterOptionsEvt += (_, _) =>
             {
                 ModsMenu.TryAddOption(
-                    PluginInfo.PLUGIN_NAME,
+                    pluginName,
                     "Enabled",
                     () => $"{_isEnabled.Value}",
                     _ =>
@@ -53,7 +62,17 @@ namespace eradev.monstersanctuary.LevelCaps
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
 
                 ModsMenu.TryAddOption(
-                    PluginInfo.PLUGIN_NAME,
+                    pluginName,
+                    "MonsterLvl=MaxPlayerLvl",
+                    () => $"{_maxMonsterMatchPlayer.Value}",
+                    _ =>
+                    {
+                        _maxMonsterMatchPlayer.Value = !_maxMonsterMatchPlayer.Value;
+                    },
+                    setDefaultValueFunc: () => _maxMonsterMatchPlayer.Value = MaxMonsterMatchPlayerDefault);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
                     "Level Cap (self)",
                     () => $"{_maxLevelSelf.Value}",
                     direction =>
@@ -73,7 +92,7 @@ namespace eradev.monstersanctuary.LevelCaps
                     setDefaultValueFunc: () => _maxLevelSelf.Value = MaxLevelSelfDefault);
 
                 ModsMenu.TryAddOption(
-                    PluginInfo.PLUGIN_NAME,
+                    pluginName,
                     "Level Cap (enemies)",
                     () => $"{_maxLevelEnemy.Value}",
                     direction => _maxLevelEnemy.Value = (_maxLevelEnemy.Value + direction).Clamp(1, 99),
@@ -83,9 +102,9 @@ namespace eradev.monstersanctuary.LevelCaps
                     setDefaultValueFunc: () => _maxLevelEnemy.Value = MaxLevelEnemyDefault);
             };
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         /// <summary>
@@ -119,8 +138,14 @@ namespace eradev.monstersanctuary.LevelCaps
                     return;
                 }
 
-                //__result = Math.Min(__result, _maxLevelEnemy.Value);
-                __result = PlayerController.Instance.Monsters.GetHighestLevel();
+                var newValue = Math.Min(__result, _maxLevelEnemy.Value);
+
+                if (_maxMonsterMatchPlayer.Value)
+                {
+                    newValue = PlayerController.Instance.Monsters.GetHighestLevel();
+                }
+
+                __result = newValue;
             }
         }
 
@@ -138,8 +163,14 @@ namespace eradev.monstersanctuary.LevelCaps
                     return;
                 }
 
-                //__instance.EncounterLevel = Math.Min(__instance.EncounterLevel, _maxLevelEnemy.Value);
-                __instance.EncounterLevel = PlayerController.Instance.Monsters.GetHighestLevel();
+                if (_maxMonsterMatchPlayer.Value)
+                {
+                    __instance.EncounterLevel = PlayerController.Instance.Monsters.GetHighestLevel();
+                }
+                else
+                {
+                    __instance.EncounterLevel = Math.Min(__instance.EncounterLevel, _maxLevelEnemy.Value);
+                }
             }
         }
 
@@ -159,9 +190,15 @@ namespace eradev.monstersanctuary.LevelCaps
 
                 var originalValue = __instance.LevelValue;
 
+                var newValue = Math.Min(__instance.LevelValue, _maxLevelEnemy.Value);
+
+                if (_maxMonsterMatchPlayer.Value)
+                {
+                    newValue = PlayerController.Instance.Monsters.GetHighestLevel();
+                }
+
                 AccessTools.PropertySetter(typeof(ChampionSummary), "LevelValue")
-                    //.Invoke(__instance, new object[] {Math.Min(__instance.LevelValue, _maxLevelEnemy.Value)});
-                    .Invoke(__instance, new object[] { PlayerController.Instance.Monsters.GetHighestLevel() });
+                    .Invoke(__instance, new object[] { newValue });
                 __instance.Level.text = $"{Utils.LOCA("Lvl")} {__instance.LevelValue}";
 
                 _log.LogDebug($"Changed Champion level: {originalValue} -> {__instance.LevelValue}");
@@ -184,8 +221,14 @@ namespace eradev.monstersanctuary.LevelCaps
 
                 var originalValue = __result;
 
-                //__result = Math.Min(__result, _maxLevelEnemy.Value);
-                __result = PlayerController.Instance.Monsters.GetHighestLevel();
+                var newValue = Math.Min(__result, _maxLevelEnemy.Value);
+
+                if (_maxMonsterMatchPlayer.Value)
+                {
+                    newValue = PlayerController.Instance.Monsters.GetHighestLevel();
+                }
+
+                __result = newValue;
 
                 _log.LogDebug($"Changed encounter level: {originalValue} -> {__result}");
             }

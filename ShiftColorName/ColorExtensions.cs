@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace eradev.monstersanctuary.ShiftColorName
+namespace garfieldbanks.MonsterSanctuary.ShiftColorName
 {
     public static class ColorExtensions
     {
