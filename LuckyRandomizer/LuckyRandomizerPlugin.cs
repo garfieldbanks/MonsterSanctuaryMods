@@ -37,6 +37,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
         private static ConfigEntry<bool> _randomizeMonstersEnabled;
         private static ConfigEntry<string> _monstersBlacklist;
 
+        private const bool RandomizedBattleRewardsEnabledDefault = false;
         private const bool RandomizedChestsEnabledDefault = true;
         private const bool NotRelicChestsDefault = true;
         private const float GoldChanceDefault = 0.0f;
@@ -49,6 +50,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
         private const bool DisableCatalystsDefault = false;
         private const bool DisableEggsDefault = false;
 
+        private static ConfigEntry<bool> _randomizeBattleRewardsEnabled;
         private static ConfigEntry<bool> _randomizeChestsEnabled;
         private static ConfigEntry<bool> _notRelicChests;
         private static ConfigEntry<float> _goldChance;
@@ -71,6 +73,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
             _randomizeMonstersEnabled = Config.Bind("Randomized Monsters", "Enabled", RandomizedMonstersEnabledDefault, "Randomize monsters");
             _monstersBlacklist = Config.Bind("Randomized Monsters", "Blacklist", MonstersBlacklistDefault, "Blacklisted monsters ID");
 
+            _randomizeBattleRewardsEnabled = Config.Bind("Randomized Battle Rewards", "Enabled", RandomizedBattleRewardsEnabledDefault, "Randomize battle rewards");
 
             _randomizeChestsEnabled = Config.Bind("Randomized Chests", "Enabled", RandomizedChestsEnabledDefault, "Randomize chests");
             _notRelicChests = Config.Bind("Randomized Chests", "Not relic chests", NotRelicChestsDefault, "Do not randomize relic chests");
@@ -126,6 +129,14 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     _ => _randomizeMonstersEnabled.Value = !_randomizeMonstersEnabled.Value,
                     determineDisabledFunc: () => !_isEnabled.Value,
                     setDefaultValueFunc: () => _randomizeMonstersEnabled.Value = RandomizedMonstersEnabledDefault);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Random battle rewards",
+                    () => $"{_randomizeBattleRewardsEnabled.Value}",
+                    _ => _randomizeBattleRewardsEnabled.Value = !_randomizeBattleRewardsEnabled.Value,
+                    determineDisabledFunc: () => !_isEnabled.Value,
+                    setDefaultValueFunc: () => _randomizeBattleRewardsEnabled.Value = RandomizedBattleRewardsEnabledDefault);
 
                 ModsMenu.TryAddOption(
                     pluginName,
@@ -879,6 +890,11 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
             [UsedImplicitly]
             private static bool Prefix(ref bool __result, GameObject reward)
             {
+                if (!_isEnabled.Value || !_randomizeBattleRewardsEnabled.Value)
+                {
+                    return true;
+                }
+
                 if (GameModeManager.Instance.BraveryMode && reward.GetComponent<Egg>() != null)
                 {
                     CombatControllerGold += reward.GetComponent<Egg>().Price;
@@ -897,6 +913,11 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
             [UsedImplicitly]
             private static bool Prefix(ref CombatController __instance)
             {
+                if (!_isEnabled.Value || !_randomizeBattleRewardsEnabled.Value)
+                {
+                    return true;
+                }
+
                 FieldInfo combatUiFI = __instance.GetType().GetField("combatUi", BindingFlags.NonPublic | BindingFlags.Instance);
                 CombatUIController combatUi = combatUiFI.GetValue(__instance) as CombatUIController;
                 MethodInfo CheckEggReplacement = __instance.GetType().GetMethod("CheckEggReplacement", BindingFlags.NonPublic | BindingFlags.Instance);
