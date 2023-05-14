@@ -31,6 +31,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         public const string ModName = "MyTweaks";
         public const string ModVersion = "1.0.0";
 
+        private const bool AlwaysRewardEggs = true;
+        private static ConfigEntry<bool> _alwaysRewardEggs;
         private const bool LevelBadgeTweak = true;
         private static ConfigEntry<bool> _levelBadgeTweak;
         private const bool UnlimitedGold = true;
@@ -85,6 +87,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private void Awake()
         {
             _levelBadgeTweak = Config.Bind("General", "Level badge tweak", LevelBadgeTweak, "Any level badge can be used to level any monster up to the same level as your current max level monster");
+            _alwaysRewardEggs = Config.Bind("General", "Reward egg tweak", AlwaysRewardEggs, "Always reward eggs for actual monsters fought");
             _unlimitedGold = Config.Bind("General", "Unlimited gold tweak", UnlimitedGold, "Unlimited gold");
             _unlimitedItemUse = Config.Bind("General", "Unlimited item use tweak", UnlimitedItemUse, "Unlimited item use");
             _openDoorsTweak = Config.Bind("General", "Open doors tweak", OpenDoorsTweak, "Doors and sliders are initially open");
@@ -112,6 +115,13 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
 
             ModsMenu.RegisterOptionsEvt += (_, _) =>
             {
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Always Get Egg - Enabled",
+                    () => $"{_alwaysRewardEggs.Value}",
+                    _ => _alwaysRewardEggs.Value = !_alwaysRewardEggs.Value,
+                    setDefaultValueFunc: () => _alwaysRewardEggs.Value = AlwaysRewardEggs);
+
                 ModsMenu.TryAddOption(
                     pluginName,
                     "Level Badge - Enabled",
@@ -279,6 +289,25 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             new Harmony(ModGUID).PatchAll();
 
             Logger.LogInfo($"Plugin {ModGUID} is loaded!");
+        }
+
+        [HarmonyPatch(typeof(CombatController), "GrantReward")]
+        private class CombatControllerGrantRewardPatch
+        {
+            [UsedImplicitly]
+            private static void Prefix(ref CombatController __instance)
+            {
+                if (!_alwaysRewardEggs.Value || __instance.CurrentEncounter.EncounterType == EEncounterType.InfinityArena ||
+                    GameModeManager.Instance.BraveryMode || __instance.CombatResult.StarsGained < 4)
+                {
+                    return;
+                }
+
+                foreach (Monster enemy in __instance.Enemies)
+                {
+                    PlayerController.Instance.Inventory.AddItem(enemy.GetEggReward(), 1, (int)enemy.Shift);
+                }
+            }
         }
 
         [HarmonyPatch(typeof(BlobFormAbility), "StartAction")]

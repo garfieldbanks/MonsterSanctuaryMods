@@ -64,6 +64,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Keys are no longer required to open any doors.
 - Warm underwear is no longer required to enter cold water.
 - Fix blob form. I think this may have been a bug in the game itself because none of my tweaks really seemed to modify anything that might affect it. But for whatever reason I occasionally I had freezes (requiring alt+f4 to get out of) when using blob form. I tried many different things to fix it and what finally worked was turning off the blob cinematic and animation lines in the code. As far as I could tell in-game these lines only forced the character to not move when transforming. With these lines commented out the transform cloud still plays and the transformation occurs but now you can move immediately after transforming into a blob. And it no longer freezes! I prefer being a blob rather than a morph ball so I made the morph ball display as a blob.
+- Every defeated monster will now reward their own egg if you get at least 4 stars. Does not show a popup. Check your inventory.
 
 ### Data Dumper
 - Dumps some data into .json files.
