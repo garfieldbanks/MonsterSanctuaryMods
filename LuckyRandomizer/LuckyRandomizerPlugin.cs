@@ -39,6 +39,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
 
         private const bool RandomizedBattleRewardsEnabledDefault = false;
         private const bool RandomizedChestsEnabledDefault = true;
+        private const bool RandomizedKeyChestsEnabledDefault = false;
         private const bool NotRelicChestsDefault = true;
         private const float GoldChanceDefault = 0.0f;
         private const int MinGoldDefault = 5;
@@ -52,6 +53,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
 
         private static ConfigEntry<bool> _randomizeBattleRewardsEnabled;
         private static ConfigEntry<bool> _randomizeChestsEnabled;
+        private static ConfigEntry<bool> _randomizeKeyChestsEnabled;
         private static ConfigEntry<bool> _notRelicChests;
         private static ConfigEntry<float> _goldChance;
         private static ConfigEntry<int> _minGold;
@@ -76,6 +78,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
             _randomizeBattleRewardsEnabled = Config.Bind("Randomized Battle Rewards", "Enabled", RandomizedBattleRewardsEnabledDefault, "Randomize battle rewards");
 
             _randomizeChestsEnabled = Config.Bind("Randomized Chests", "Enabled", RandomizedChestsEnabledDefault, "Randomize chests");
+            _randomizeKeyChestsEnabled = Config.Bind("Randomized Key Chests", "Enabled", RandomizedKeyChestsEnabledDefault, "Randomize key chests");
             _notRelicChests = Config.Bind("Randomized Chests", "Not relic chests", NotRelicChestsDefault, "Do not randomize relic chests");
             _goldChance = Config.Bind("Randomized Chests", "Chance for gold", GoldChanceDefault, "Chance to get gold in chests (0.0 = never, 1.0 = always)");
             _minGold = Config.Bind("Randomized Chests", "Minimum gold", MinGoldDefault, "Minimum value of gold in chests (x100, must be > 0)");
@@ -145,6 +148,14 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     _ => _randomizeChestsEnabled.Value = !_randomizeChestsEnabled.Value,
                     determineDisabledFunc: () => !_isEnabled.Value,
                     setDefaultValueFunc: () => _randomizeChestsEnabled.Value = RandomizedChestsEnabledDefault);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Random key chests",
+                    () => $"{_randomizeKeyChestsEnabled.Value}",
+                    _ => _randomizeKeyChestsEnabled.Value = !_randomizeKeyChestsEnabled.Value,
+                    determineDisabledFunc: () => !_isEnabled.Value,
+                    setDefaultValueFunc: () => _randomizeKeyChestsEnabled.Value = RandomizedKeyChestsEnabledDefault);
 
                 ModsMenu.TryAddOption(
                     pluginName,
@@ -596,13 +607,10 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                 {
                     _log.LogDebug("ChestRandomizer ignore: Bravery chest");
                 }
-                else if (__instance.Item != null && __instance.Item.GetComponent<KeyItem>() != null)
+                else if (__instance.Item != null && __instance.Item.GetComponent<KeyItem>() != null &&
+                        !(_randomizeKeyChestsEnabled.Value && __instance.Item.GetComponent<BaseItem>().GetName().ToLower().Contains("key")))
                 {
                     _log.LogDebug("ChestRandomizer ignore: Key chest");
-                }
-                else if (__instance.Item != null && __instance.Item.GetComponent<BaseItem>().GetName().ToLower().Contains("key"))
-                {
-                    _log.LogDebug("ChestRandomizer ignore: Item name contains key");
                 }
                 else if (__instance.Item != null && __instance.Item.GetComponent<UniqueItem>() != null)
                 {
