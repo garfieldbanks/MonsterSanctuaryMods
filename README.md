@@ -23,23 +23,36 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ### CombatSpeed
 - Faster combat speeds available in the game options menu.
 
+### Data Dumper
+- Dumps some data into .json files in the same location as the .dll file.
+
+### Display Unhatched Eggs
+- Display a \* before unhatched eggs' name.
+
 ### Fly
 - Infinite jumping.
 
 ### FreeJump
 - Double jump from the beginning of the game.
 
-### NewGamePlusMonsterAbilities
-- Use all monster explore abilities from the beginning of the game without the need to encounter it.
+### Get All Army Rewards
+- Get all unlocked army rewards and multiple eggs donation rewards at once.
 
-### NewGamePlusMonsterArmy
-- Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard).
+### Hatch Max Level Eggs
+- Changes the level eggs are hatched at to equal your highest level monster, instead of highest level monster minus two.
+
+### Level Caps
+- Custom level cap for your monsters and enemies.
+- Also has an in-game option to set monster level to current player max monster level.
 
 ### LuckyRandomizer
 - Based on the randomizer mod by eradev.
 - Fixes the issue of the original mod which prevented blog burg chambers from opening.
 - Fixes the issue of the original mod which prevented certain essential items from being received.
 - Rewards from monster battles and the items in chests are randomly selected from items you don't already have. Once you have all items, you'll receive items with the lowest quantity in your inventory.
+
+### Mods Menu
+- All my mods use this to be able to toggle on/off in-game.
 
 ### MyTweaks
 - These tweaks can be individually enabled/disabled in the in-game mods menu.
@@ -63,26 +76,19 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Removed annoying sound when switching monsters in the menu screen.
 - Keys are no longer required to open any doors.
 - Warm underwear is no longer required to enter cold water.
-- Fix blob form. I think this may have been a bug in the game itself because none of my tweaks really seemed to modify anything that might affect it. But for whatever reason I occasionally I had freezes (requiring alt+f4 to get out of) when using blob form. I tried many different things to fix it and what finally worked was turning off the blob cinematic and animation lines in the code. As far as I could tell in-game these lines only forced the character to not move when transforming. With these lines commented out the transform cloud still plays and the transformation occurs but now you can move immediately after transforming into a blob. And it no longer freezes! I prefer being a blob rather than a morph ball so I made the morph ball display as a blob.
+- Fix blob form. I think this may have been a bug in the game itself because none of my tweaks really seemed to modify anything that might affect it. But for whatever reason I occasionally I had freezes (requiring alt+f4 to get out of) when using blob form. I tried many different things to fix it and what finally worked was turning off the blob cinematic and animation lines in the code. As far as I could tell in-game these lines only forced the character to not move when transforming. With these lines commented out the transform cloud still plays and the transformation occurs but now you can move immediately after transforming into a blob. And it no longer freezes!
+- I prefer being a blob rather than a morph ball so I made the morph ball display as a blob.
 - Every defeated monster will now reward their own egg if you get at least 4 stars. Does not show a popup. Check your inventory.
+- Infinity Buff is disabled.
+- Fix equipment upgrade menu so it no longer jumps around randomly.
 
-### Data Dumper
-- Dumps some data into .json files.
+### NewGamePlusMonsterAbilities
+- Use all monster explore abilities from the beginning of the game without the need to encounter it.
 
-### Display Unhatched Eggs
-- Display a \* before unhatched eggs' name.
+### NewGamePlusMonsterArmy
+- Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard).
 
-### Show Only Valid Evolution
-- Only display valid monsters when choosing a Catalyst target.
-
-### Get All Army Rewards
-- Get all unlocked army rewards and multiple eggs donation rewards at once.
-
-### Level Caps
-- Custom level cap for your monsters and enemies.
-- Also has an in-game option to set monster level to current player max monster level.
-
-### NG+ Options
+### NG+ Starting Options
 - Various options when starting a New Game+
 - Also has options to clear inventory and monsters.
 
@@ -95,16 +101,13 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Change the monster name's color depending on its shift in certain screens.
 - Fixes a bug of the original mod for unshifted monsters when donating to the monster army.
 
+### Show Only Valid Evolution
+- Only display valid monsters when choosing a Catalyst target.
+
 ### Start Button Confirm
 - Allow pressing a button to move the cursor of the rename window to the confirm button.
 
-### Hatch Max Level Eggs
-- Changes the level eggs are hatched at to equal your highest level monster, instead of highest level monster minus two.
-
-### Mods Menu
-- All my mods use this to be able to toggle on/off in-game.
-
-### Credits
+## Credits
 - https://github.com/Eradev/MonsterSanctuaryMods
 - https://github.com/Wulfbanes/MonsterSanctuaryMods
 - https://github.com/EvaisaDev?tab=repositories

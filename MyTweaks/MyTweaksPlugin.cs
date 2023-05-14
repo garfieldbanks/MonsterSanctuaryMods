@@ -79,6 +79,10 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private static ConfigEntry<bool> _fixBlobForm;
         private const bool ReplaceMorphWithBlobTweak = true;
         private static ConfigEntry<bool> _replaceMorphWithBlobTweak;
+        private const bool DisableInfinityBuff = true;
+        private static ConfigEntry<bool> _disableInfinityBuff;
+        private const bool FixUpgradeMenu = true;
+        private static ConfigEntry<bool> _fixUpgradeMenu;
 
         private static ManualLogSource _log;
         private static bool tempBool;
@@ -110,6 +114,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             _warmUnderwearTweak = Config.Bind("General", "Warm underwear tweak", WarmUnderwearTweak, "Warm underwear is no longer required to enter cold water");
             _fixBlobForm = Config.Bind("General", "Fix blob form", FixBlobForm, "Fix blob form");
             _replaceMorphWithBlobTweak = Config.Bind("General", "Replace morph with blob", ReplaceMorphWithBlobTweak, "Morph ball displays as a blob");
+            _disableInfinityBuff = Config.Bind("General", "Disable infinity buff", DisableInfinityBuff, "Infinity buff is disabled");
+            _fixUpgradeMenu = Config.Bind("General", "Fix upgrade menu", FixUpgradeMenu, "Prevent upgrade menu from jumping around");
 
             const string pluginName = ModName;
 
@@ -282,6 +288,20 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     () => $"{_replaceMorphWithBlobTweak.Value}",
                     _ => _replaceMorphWithBlobTweak.Value = !_replaceMorphWithBlobTweak.Value,
                     setDefaultValueFunc: () => _replaceMorphWithBlobTweak.Value = ReplaceMorphWithBlobTweak);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "No Infinity Buff - Enabled",
+                    () => $"{_disableInfinityBuff.Value}",
+                    _ => _disableInfinityBuff.Value = !_disableInfinityBuff.Value,
+                    setDefaultValueFunc: () => _disableInfinityBuff.Value = DisableInfinityBuff);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Fix Upgrade Menu - Enabled",
+                    () => $"{_fixUpgradeMenu.Value}",
+                    _ => _fixUpgradeMenu.Value = !_fixUpgradeMenu.Value,
+                    setDefaultValueFunc: () => _fixUpgradeMenu.Value = FixUpgradeMenu);
             };
 
             _log = Logger;
@@ -289,6 +309,70 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             new Harmony(ModGUID).PatchAll();
 
             Logger.LogInfo($"Plugin {ModGUID} is loaded!");
+        }
+
+        [HarmonyPatch(typeof(UpgradeMenu), "ConfirmedUpgradePopup")]
+        private class UpgradeMenuConfirmedUpgradePopupPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(UpgradeMenu __instance, ref int index)
+            {
+                if (!_fixUpgradeMenu.Value)
+                {
+                    return true;
+                }
+
+                __instance.ItemList.SetLocked(locked: false);
+                if (index != 0)
+                {
+                    return false;
+                }
+                MenuListItem currentSelected = __instance.ItemList.CurrentSelected;
+                Equipment equipment = currentSelected.Displayable as Equipment;
+                InventoryItem inventoryItem = currentSelected.Displayable as InventoryItem;
+                if (equipment != null)
+                {
+                    currentSelected.GetComponent<UpgradeMenuItem>().Monster.Equipment.UpgradeEquipment(equipment);
+                }
+                else
+                {
+                    equipment = inventoryItem.Equipment;
+                    Equipment component = inventoryItem.Equipment.UpgradesTo.GetComponent<Equipment>();
+                    PlayerController.Instance.Inventory.RemoveItem(inventoryItem.Item);
+                    PlayerController.Instance.Inventory.AddItem(component);
+                    InventoryItem item = PlayerController.Instance.Inventory.GetItem(component);
+                    //if (item.Equipment.UpgradesTo != null)
+                    //{
+                    //    __instance.PagedItemList.SelectDisplayable(item);
+                    //}
+                }
+                foreach (ItemQuantity upgradeMaterial in equipment.UpgradeMaterials)
+                {
+                    PlayerController.Instance.Inventory.RemoveItem(upgradeMaterial.Item.GetComponent<BaseItem>(), upgradeMaterial.Quantity);
+                }
+                SFXController.Instance.PlaySFX(SFXController.Instance.SFXBlacksmithing);
+                MethodInfo UpdateMenuList = __instance.GetType().GetMethod("UpdateMenuList", BindingFlags.NonPublic | BindingFlags.Instance);
+                UpdateMenuList.Invoke(__instance, new object[] { });
+                __instance.PagedItemList.ValidateCurrentSelected();
+                MethodInfo OnItemHovered = __instance.GetType().GetMethod("OnItemHovered", BindingFlags.NonPublic | BindingFlags.Instance);
+                OnItemHovered.Invoke(__instance, new object[] { __instance.ItemList.CurrentSelected });
+                AchievementsManager.Instance.OnEquipmentUpgraded();
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(Monster), "AddInfinityBuff")]
+        private class MonsterAddInfinityBuffPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix()
+            {
+                if (!_disableInfinityBuff.Value)
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
         [HarmonyPatch(typeof(CombatController), "GrantReward")]
