@@ -456,9 +456,9 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                             !food.Contains(x) &&  // Remove items the player already has
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+1") && // remove +1 items
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+2") && // remove +2 items
-                            !x.GetComponent<BaseItem>().GetName().EndsWith("+3") && // remove +2 items
-                            !x.GetComponent<BaseItem>().GetName().EndsWith("+4") && // remove +2 items
-                            !x.GetComponent<BaseItem>().GetName().EndsWith("+5") && // remove +2 items
+                            !x.GetComponent<BaseItem>().GetName().EndsWith("+3") && // remove +3 items
+                            !x.GetComponent<BaseItem>().GetName().EndsWith("+4") && // remove +4 items
+                            !x.GetComponent<BaseItem>().GetName().EndsWith("+5") && // remove +5 items
                             !x.GetComponent<BaseItem>().GetName().Contains("Wooden Stick") && // remove wooden stick
                             !x.GetComponent<BaseItem>().GetName().Contains("Level Badge") && // remove level badges
                             !x.GetComponent<BaseItem>().GetName().Contains("Reward Box") && // remove reward boxes

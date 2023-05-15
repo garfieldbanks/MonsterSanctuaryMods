@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
 using HarmonyLib;
 using JetBrains.Annotations;
 using MonoMod.RuntimeDetour;
@@ -31,8 +32,15 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         public const string ModName = "MyTweaks";
         public const string ModVersion = "1.0.0";
 
-        private const bool AlwaysRewardEggs = true;
-        private static ConfigEntry<bool> _alwaysRewardEggs;
+        private static ConfigEntry<int> _keeperRankMod;
+        private const int KeeperRankMod = 0;
+        private static ConfigEntry<int> _keeperUpgradeEquipmentLevel;
+        private const int KeeperUpgradeEquipmentLevel = 100;
+        private static ConfigEntry<int> _keeperMaxEquipmentLevel;
+        private const int KeeperMaxEquipmentLevel = 100;
+        private static ConfigEntry<int> _alwaysRewardEggs;
+        private const int AlwaysRewardEggs = 4;
+        private static ConfigEntry<int> _alwaysRewardEggsStars;
         private const bool LevelBadgeTweak = true;
         private static ConfigEntry<bool> _levelBadgeTweak;
         private const bool UnlimitedGold = true;
@@ -83,6 +91,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private static ConfigEntry<bool> _disableInfinityBuff;
         private const bool FixUpgradeMenu = true;
         private static ConfigEntry<bool> _fixUpgradeMenu;
+        private const float ExpMultiplier = 1.0f;
+        private static ConfigEntry<float> _expMultiplier;
 
         private static ManualLogSource _log;
         private static bool tempBool;
@@ -116,6 +126,15 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             _replaceMorphWithBlobTweak = Config.Bind("General", "Replace morph with blob", ReplaceMorphWithBlobTweak, "Morph ball displays as a blob");
             _disableInfinityBuff = Config.Bind("General", "Disable infinity buff", DisableInfinityBuff, "Infinity buff is disabled");
             _fixUpgradeMenu = Config.Bind("General", "Fix upgrade menu", FixUpgradeMenu, "Prevent upgrade menu from jumping around");
+            _expMultiplier = Config.Bind("General", "Exp multiplier", ExpMultiplier, "Experience multiplier");
+            _keeperUpgradeEquipmentLevel = Config.Bind("General", "Keeper equip upgrade", KeeperUpgradeEquipmentLevel, "Level at which keepers will upgrade their equipment once");
+            _keeperMaxEquipmentLevel = Config.Bind("General", "Keeper equip max", KeeperMaxEquipmentLevel, "Level at which keepers will have max level equipment");
+            _keeperRankMod = Config.Bind("General", "Keeper rank mod", KeeperRankMod, "Changes number of required champions for keeper ranks");
+
+            if (_expMultiplier.Value < 0)
+            {
+                _expMultiplier.Value = ExpMultiplier;
+            }
 
             const string pluginName = ModName;
 
@@ -123,10 +142,48 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             {
                 ModsMenu.TryAddOption(
                     pluginName,
-                    "Always Get Egg - Enabled",
+                    "Exp Multiplier",
+                    () => $"{Math.Round(_expMultiplier.Value * 100f, 1)}%",
+                    direction => _expMultiplier.Value = (_expMultiplier.Value + direction * 0.01f).Clamp(0.0f, 100.0f),
+                    () => ModsMenu.CreateOptionsPercentRange(0.0f, 11.75f, 0.25f),
+                    newValue => _expMultiplier.Value = (float.Parse(newValue.Replace("%", "")) / 100f).Clamp(0.0f, 100.0f),
+                    setDefaultValueFunc: () => _expMultiplier.Value = ExpMultiplier);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Egg Reward Stars",
                     () => $"{_alwaysRewardEggs.Value}",
-                    _ => _alwaysRewardEggs.Value = !_alwaysRewardEggs.Value,
+                    direction => _alwaysRewardEggs.Value = (_alwaysRewardEggs.Value + direction).Clamp(1, 7),
+                    () => ModsMenu.CreateOptionsIntRange(1, 7, 1),
+                    newValue => _alwaysRewardEggs.Value = (int.Parse(newValue)).Clamp(1, 7),
                     setDefaultValueFunc: () => _alwaysRewardEggs.Value = AlwaysRewardEggs);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Keeper Equip Upgrade",
+                    () => $"{_keeperUpgradeEquipmentLevel.Value}",
+                    direction => _keeperUpgradeEquipmentLevel.Value = (_keeperUpgradeEquipmentLevel.Value + direction).Clamp(1, 999),
+                    () => ModsMenu.CreateOptionsIntRange(1, 115, 5),
+                    newValue => _keeperUpgradeEquipmentLevel.Value = (int.Parse(newValue)).Clamp(1, 999),
+                    setDefaultValueFunc: () => _keeperUpgradeEquipmentLevel.Value = KeeperUpgradeEquipmentLevel);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Keeper Max Upgrade",
+                    () => $"{_keeperMaxEquipmentLevel.Value}",
+                    direction => _keeperMaxEquipmentLevel.Value = (_keeperMaxEquipmentLevel.Value + direction).Clamp(1, 999),
+                    () => ModsMenu.CreateOptionsIntRange(1, 115, 5),
+                    newValue => _keeperMaxEquipmentLevel.Value = (int.Parse(newValue)).Clamp(1, 999),
+                    setDefaultValueFunc: () => _keeperMaxEquipmentLevel.Value = KeeperMaxEquipmentLevel);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "Keeper Rank Mod",
+                    () => $"{_keeperRankMod.Value}",
+                    direction => _keeperRankMod.Value = (_keeperRankMod.Value + direction).Clamp(-27, 0),
+                    () => ModsMenu.CreateOptionsIntRange(-27, 0, 1),
+                    newValue => _keeperRankMod.Value = (int.Parse(newValue)).Clamp(-27, 0),
+                    setDefaultValueFunc: () => _keeperRankMod.Value = KeeperRankMod);
 
                 ModsMenu.TryAddOption(
                     pluginName,
@@ -311,6 +368,111 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
+        [HarmonyPatch(typeof(KeeperRank), "GetChampionsRequiredForRank")]
+        private class KeeperRankGetChampionsRequiredForRankPatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref int __result)
+            {
+                __result = (__result + _keeperRankMod.Value).Clamp(0, 27);
+            }
+        }
+
+        [HarmonyPatch(typeof(NPCKeeperMonster), "GetEquipment")]
+        private class NPCKeeperMonsterGetEquipmentPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(NPCKeeperMonster __instance, ref Equipment __result, ref GameObject equipGO, ref MonsterEncounter encounter, ref Equipment originalEquipment)
+            {
+                Equipment equipment = equipGO.GetComponent<Equipment>();
+                if (originalEquipment != null)
+                {
+                    equipment = equipment.GetByUpgradeLevel(originalEquipment.GetUpgradeLevel());
+                }
+
+                if (!encounter.IsOnlineBattle)
+                {
+                    int maxPlayerLevel = PlayerController.Instance.Monsters.GetHighestLevel();
+                    if (maxPlayerLevel >= _keeperMaxEquipmentLevel.Value && equipment.UpgradesTo != null)
+                    {
+                        while (equipment.UpgradesTo != null)
+                        {
+                            equipment = equipment.UpgradesTo.GetComponent<Equipment>();
+                        }
+                        //_log.LogDebug($"NPCKeeperMonster max equipment: {equipment.GetName()}");
+                        __result = equipment;
+                        return false;
+                    }
+                    else if (maxPlayerLevel >= _keeperUpgradeEquipmentLevel.Value && equipment.UpgradesTo != null)
+                    {
+                        equipment = equipment.UpgradesTo.GetComponent<Equipment>();
+                        //_log.LogDebug($"NPCKeeperMonster upgraded equipment: {equipment.GetName()}");
+                        __result = equipment;
+                        return false;
+                    }
+                    else
+                    {
+                        if (PlayerController.Instance.Difficulty == EDifficulty.Easy && equipment.UpgradesFrom != null)
+                        {
+                            if (equipment.UpgradesFrom.UpgradesFrom != null)
+                            {
+                                __result = equipment.UpgradesFrom.UpgradesFrom;
+                                return false;
+                            }
+
+                            __result = equipment.UpgradesFrom;
+                            return false;
+                        }
+
+                        if (PlayerController.Instance.Difficulty == EDifficulty.Master && equipment.UpgradesTo != null)
+                        {
+                            __result = equipment.UpgradesTo.GetComponent<Equipment>();
+                            return false;
+                        }
+                    }
+                }
+
+                //if (equipment != null)
+                //{
+                //    _log.LogDebug($"NPCKeeperMonster normal equipment: {equipment.GetName()}");
+                //}
+
+                __result = equipment;
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(Monster), "CalculateNeededExperience")]
+        private class MonsterCalculateNeededExperiencePatch
+        {
+            [UsedImplicitly]
+            private static void Postfix(ref int __result)
+            {
+                if (_expMultiplier.Value <= 0)
+                {
+                    return;
+                }
+                __result = (int)((float)__result / _expMultiplier.Value);
+                if (__result <= 0)
+                {
+                    __result = 1;
+                }    
+            }
+        }
+
+        [HarmonyPatch(typeof(Monster), "AddExp")]
+        private class MonsterAddExpPatch
+        {
+            [UsedImplicitly]
+            private static void Prefix(ref int expAmount)
+            {
+                if (_expMultiplier.Value == 0)
+                {
+                    expAmount = 0;
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(UpgradeMenu), "ConfirmedUpgradePopup")]
         private class UpgradeMenuConfirmedUpgradePopupPatch
         {
@@ -381,8 +543,8 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Prefix(ref CombatController __instance)
             {
-                if (!_alwaysRewardEggs.Value || __instance.CurrentEncounter.EncounterType == EEncounterType.InfinityArena ||
-                    GameModeManager.Instance.BraveryMode || __instance.CombatResult.StarsGained < 4)
+                if (__instance.CurrentEncounter.EncounterType == EEncounterType.InfinityArena || GameModeManager.Instance.BraveryMode ||
+                    (PlayerController.Instance.Inventory.Eggs.Count > 0 && __instance.CombatResult.StarsGained < _alwaysRewardEggs.Value))
                 {
                     return;
                 }

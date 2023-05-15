@@ -78,9 +78,13 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Warm underwear is no longer required to enter cold water.
 - Fix blob form. I think this may have been a bug in the game itself because none of my tweaks really seemed to modify anything that might affect it. But for whatever reason I occasionally I had freezes (requiring alt+f4 to get out of) when using blob form. I tried many different things to fix it and what finally worked was turning off the blob cinematic and animation lines in the code. As far as I could tell in-game these lines only forced the character to not move when transforming. With these lines commented out the transform cloud still plays and the transformation occurs but now you can move immediately after transforming into a blob. And it no longer freezes!
 - I prefer being a blob rather than a morph ball so I made the morph ball display as a blob.
-- Every defeated monster will now reward their own egg if you get at least 4 stars. Does not show a popup. Check your inventory.
+- Every defeated monster will now reward their own egg if you get at least 1-6 stars. Does not show a popup. Check your inventory. To disable, set it to 7 in the options menu. If you have 0 eggs it will always reward an egg.
 - Infinity Buff is disabled.
 - Fix equipment upgrade menu so it no longer jumps around randomly.
+- An experience modifier is available in the mod options menu.
+- A keeper rank modifier is available in the mod options menu.
+- A keeper equipment upgrade modifier is available in the mod options menu. Enemy monsters in keeper battles will have their equipment upgraded once if the player max monster level is equal to or greater than this option.
+- A keeper equipment max modifier is available in the mod options menu. Enemy monsters in keeper battles will have their equipment maximized if the player max monster level is equal to or greater than this option.
 
 ### New Game Plus Monster Abilities
 - Use all monster explore abilities from the beginning of the game without the need to encounter it.

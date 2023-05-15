@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BepInEx.Logging;
 using garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu;
 using UnityEngine;
@@ -44,7 +45,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
                 options.Add($"{end}");
             }
 
-            return options;
+            return options.Distinct().ToList();
         }
 
         public static List<string> CreateOptionsPercentRange(float start, float end, float step = 0.01f)
