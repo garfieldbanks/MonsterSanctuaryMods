@@ -20,7 +20,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Build the DLLs > right click solution or individual project and click build. There is a post-build event to copy the dll files to the `BepInEx/plugins` folder which you should probably create now if you haven't already.
 
 ## Mods
-### CombatSpeed
+### Combat Speed
 - Faster combat speeds available in the game options menu.
 
 ### Data Dumper
@@ -32,7 +32,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ### Fly
 - Infinite jumping.
 
-### FreeJump
+### Free Jump
 - Double jump from the beginning of the game.
 
 ### Get All Army Rewards
@@ -45,7 +45,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Custom level cap for your monsters and enemies.
 - Also has an in-game option to set monster level to current player max monster level.
 
-### LuckyRandomizer
+### Lucky Randomizer
 - Based on the randomizer mod by eradev.
 - Fixes the issue of the original mod which prevented blog burg chambers from opening.
 - Fixes the issue of the original mod which prevented certain essential items from being received.
@@ -54,7 +54,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ### Mods Menu
 - All my mods use this to be able to toggle on/off in-game.
 
-### MyTweaks
+### My Tweaks
 - These tweaks can be individually enabled/disabled in the in-game mods menu.
 - Any level badge can be used to level any monster up to the same level as your current max level monster.
 - Unlimited gold and unlimited item use.
@@ -82,10 +82,10 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Infinity Buff is disabled.
 - Fix equipment upgrade menu so it no longer jumps around randomly.
 
-### NewGamePlusMonsterAbilities
+### New Game Plus Monster Abilities
 - Use all monster explore abilities from the beginning of the game without the need to encounter it.
 
-### NewGamePlusMonsterArmy
+### New Game Plus Monster Army
 - Donate any monster/egg without needing to encounter it (cannot donate your last monster with swimming, improved flying, or Bard).
 
 ### NG+ Starting Options
