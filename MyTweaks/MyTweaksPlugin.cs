@@ -93,13 +93,18 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private static ConfigEntry<bool> _fixUpgradeMenu;
         private const float ExpMultiplier = 1.0f;
         private static ConfigEntry<float> _expMultiplier;
+        private const bool DisableRandomKeeperMonsters = false;
+        private static ConfigEntry<bool> _disableRandomKeeperMonsters;
 
         private static ManualLogSource _log;
-        private static bool tempBool;
+
+        private static bool SkillMenuSelectMonsterTemp;
+        private static bool CombatControllerSetupKeeperBattleEnemiesTemp;
 
         [UsedImplicitly]
         private void Awake()
         {
+            _disableRandomKeeperMonsters = Config.Bind("General", "No random keeper monsters", DisableRandomKeeperMonsters, "Disables randomization of keeper monsters");
             _levelBadgeTweak = Config.Bind("General", "Level badge tweak", LevelBadgeTweak, "Any level badge can be used to level any monster up to the same level as your current max level monster");
             _alwaysRewardEggs = Config.Bind("General", "Reward egg tweak", AlwaysRewardEggs, "Always reward eggs for actual monsters fought");
             _unlimitedGold = Config.Bind("General", "Unlimited gold tweak", UnlimitedGold, "Unlimited gold");
@@ -359,6 +364,13 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     () => $"{_fixUpgradeMenu.Value}",
                     _ => _fixUpgradeMenu.Value = !_fixUpgradeMenu.Value,
                     setDefaultValueFunc: () => _fixUpgradeMenu.Value = FixUpgradeMenu);
+
+                ModsMenu.TryAddOption(
+                    pluginName,
+                    "No Random Keepers - Ena..",
+                    () => $"{_disableRandomKeeperMonsters.Value}",
+                    _ => _disableRandomKeeperMonsters.Value = !_disableRandomKeeperMonsters.Value,
+                    setDefaultValueFunc: () => _disableRandomKeeperMonsters.Value = DisableRandomKeeperMonsters);
             };
 
             _log = Logger;
@@ -366,6 +378,29 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             new Harmony(ModGUID).PatchAll();
 
             Logger.LogInfo($"Plugin {ModGUID} is loaded!");
+        }
+
+        [HarmonyPatch(typeof(CombatController), "SetupKeeperBattleEnemies")]
+        private class CombatControllerSetupKeeperBattleEnemiesPatch
+        {
+            [UsedImplicitly]
+            private static void Prefix()
+            {
+                if (_disableRandomKeeperMonsters.Value)
+                {
+                    CombatControllerSetupKeeperBattleEnemiesTemp = GameModeManager.Instance.RandomizerMode;
+                    GameModeManager.Instance.RandomizerMode = false;
+                }
+            }
+
+            [UsedImplicitly]
+            private static void Postfix()
+            {
+                if (_disableRandomKeeperMonsters.Value)
+                {
+                    GameModeManager.Instance.RandomizerMode = CombatControllerSetupKeeperBattleEnemiesTemp;
+                }
+            }
         }
 
         [HarmonyPatch(typeof(KeeperRank), "GetChampionsRequiredForRank")]
@@ -783,7 +818,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     return true;
                 }
 
-                tempBool = PlayerController.Instance.NewGamePlus;
+                SkillMenuSelectMonsterTemp = PlayerController.Instance.NewGamePlus;
                 PlayerController.Instance.NewGamePlus = true;
                 return true;
             }
@@ -796,7 +831,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     return;
                 }
 
-                PlayerController.Instance.NewGamePlus = tempBool;
+                PlayerController.Instance.NewGamePlus = SkillMenuSelectMonsterTemp;
             }
         }
 

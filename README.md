@@ -85,6 +85,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - A keeper rank modifier is available in the mod options menu.
 - A keeper equipment upgrade modifier is available in the mod options menu. Enemy monsters in keeper battles will have their equipment upgraded once if the player max monster level is equal to or greater than this option.
 - A keeper equipment max modifier is available in the mod options menu. Enemy monsters in keeper battles will have their equipment maximized if the player max monster level is equal to or greater than this option.
+- An option to disable randomization of keeper monsters in keeper battles is available in the mod options menu.
 
 ### New Game Plus Monster Abilities
 - Use all monster explore abilities from the beginning of the game without the need to encounter it.
