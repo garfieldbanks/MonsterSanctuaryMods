@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -12,8 +12,8 @@ namespace garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs
     public class HatchMaxLevelEggsPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs";
-        public const string ModName = "HatchMaxLevelEggs";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Hatch Max Level Eggs";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -23,14 +23,14 @@ namespace garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBHMLE";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Hatch Max Level Eggs",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

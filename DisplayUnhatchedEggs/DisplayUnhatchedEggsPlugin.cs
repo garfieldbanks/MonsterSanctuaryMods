@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 
@@ -11,8 +11,8 @@ namespace garfieldbanks.MonsterSanctuary.DisplayUnhatchedEggs
     public class DisplayUnhatchedEggsPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.DisplayUnhatchedEggs";
-        public const string ModName = "DisplayUnhatchedEggs";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Display Unhatched Eggs";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -22,14 +22,14 @@ namespace garfieldbanks.MonsterSanctuary.DisplayUnhatchedEggs
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBDUE";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Display Unhatched Eggs",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

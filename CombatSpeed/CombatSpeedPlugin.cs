@@ -4,8 +4,8 @@ using BepInEx.Logging;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
+using garfieldbanks.MonsterSanctuary.ModsMenu.Extensions;
 
 namespace garfieldbanks.MonsterSanctuary.CombatSpeed
 {
@@ -14,8 +14,8 @@ namespace garfieldbanks.MonsterSanctuary.CombatSpeed
     public class CombatSpeedPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.CombatSpeed";
-        public const string ModName = "CombatSpeed";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Combat Speed";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -25,14 +25,14 @@ namespace garfieldbanks.MonsterSanctuary.CombatSpeed
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBCS";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Combat Speed",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

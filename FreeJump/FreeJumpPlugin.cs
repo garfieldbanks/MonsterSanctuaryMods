@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -13,8 +13,8 @@ namespace garfieldbanks.MonsterSanctuary.FreeJump
     public class FreeJumpPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.FreeJump";
-        public const string ModName = "FreeJump";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Free Jump";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -24,14 +24,14 @@ namespace garfieldbanks.MonsterSanctuary.FreeJump
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBFJ";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Free Jump",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

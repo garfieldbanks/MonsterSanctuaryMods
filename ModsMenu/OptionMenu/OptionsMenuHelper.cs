@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu
+namespace garfieldbanks.MonsterSanctuary.ModsMenu.OptionMenu
 {
     internal static class OptionsMenuHelper
     {
@@ -21,7 +21,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu
         {
             if (string.IsNullOrWhiteSpace(modName))
             {
-                ModsMenu.LogError("You must pass a valid mod name.");
+                ModList.LogError("You must pass a valid mod name.");
 
                 return;
             }
@@ -30,7 +30,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu
 
             if (CustomMenuOptions.Any(x => x.Key == optionKey))
             {
-                ModsMenu.LogError($"Option \"{optionKey}\" already exist.");
+                ModList.LogError($"Option \"{optionKey}\" already exists.");
 
                 return;
             }
@@ -46,7 +46,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu
                 disabledInGameMenu,
                 setDefaultValueFunc));
 
-            ModsMenu.LogDebug($"Added option \"{optionKey}\".");
+            ModList.LogDebug($"Added option \"{optionKey}\".");
         }
     }
 }

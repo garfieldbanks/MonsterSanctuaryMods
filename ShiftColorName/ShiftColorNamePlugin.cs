@@ -2,7 +2,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -14,8 +14,8 @@ namespace garfieldbanks.MonsterSanctuary.ShiftColorName
     public class ShiftColorNamePlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.ShiftColorName";
-        public const string ModName = "ShiftColorName";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Shift Color Name";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -28,14 +28,14 @@ namespace garfieldbanks.MonsterSanctuary.ShiftColorName
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBSCN";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Shift Color Name",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

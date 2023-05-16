@@ -1,8 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
+using garfieldbanks.MonsterSanctuary.ModsMenu.Extensions;
 using HarmonyLib;
 using JetBrains.Annotations;
 using MonoMod.RuntimeDetour;
@@ -29,18 +29,17 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
     public class MyTweaksPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.MyTweaks";
-        public const string ModName = "MyTweaks";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "My Tweaks";
+        public const string ModVersion = "2.0.0";
 
-        private static ConfigEntry<int> _keeperRankMod;
         private const int KeeperRankMod = 0;
-        private static ConfigEntry<int> _keeperUpgradeEquipmentLevel;
+        private static ConfigEntry<int> _keeperRankMod;
         private const int KeeperUpgradeEquipmentLevel = 100;
-        private static ConfigEntry<int> _keeperMaxEquipmentLevel;
+        private static ConfigEntry<int> _keeperUpgradeEquipmentLevel;
         private const int KeeperMaxEquipmentLevel = 100;
+        private static ConfigEntry<int> _keeperMaxEquipmentLevel;
+        private const int AlwaysRewardEggs = 1;
         private static ConfigEntry<int> _alwaysRewardEggs;
-        private const int AlwaysRewardEggs = 4;
-        private static ConfigEntry<int> _alwaysRewardEggsStars;
         private const bool LevelBadgeTweak = true;
         private static ConfigEntry<bool> _levelBadgeTweak;
         private const bool UnlimitedGold = true;
@@ -63,14 +62,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private static ConfigEntry<bool> _darknessTweak;
         private const bool SkillsTweaks = true;
         private static ConfigEntry<bool> _skillsTweaks;
-        //private const bool UnlearnSkillsTweak = true;
-        //private static ConfigEntry<bool> _unlearnSkillsTweak;
-        //private const bool SkillRequirementsTweak = true;
-        //private static ConfigEntry<bool> _skillRequirementsTweak;
-        //private const bool NegativeSkillPointsTweak = true;
-        //private static ConfigEntry<bool> _negativeSkillPointsTweak;
-        //private const bool UltimateSkillsTweak = true;
-        //private static ConfigEntry<bool> _ultimateSkillsTweak;
         private const bool RemoveObstaclesTweak = true;
         private static ConfigEntry<bool> _removeObstaclesTweak;
         private const bool TorchesTweak = true;
@@ -100,6 +91,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
 
         private static bool SkillMenuSelectMonsterTemp;
         private static bool CombatControllerSetupKeeperBattleEnemiesTemp;
+        private static bool UpgradeMenuConfirmedMenuPopupTemp = false;
 
         [UsedImplicitly]
         private void Awake()
@@ -117,10 +109,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             _flyingSwimmingTweak = Config.Bind("General", "Flying swimming tweak", FlyingSwimmingTweak, "All flying monsters have improved flying and swimming and all swimmers resist streams");
             _darknessTweak = Config.Bind("General", "Darkness tweak", DarknessTweak, "You can see in darkness normally");
             _skillsTweaks = Config.Bind("General", "Skills tweaks", SkillsTweaks, "Skills can now be unlearned the same way you learn them and can go negative");
-            //_unlearnSkillsTweak = Config.Bind("General", "Unlearn skills tweak", UnlearnSkillsTweak, "Skills can now be unlearned the same way you learn them");
-            //_skillRequirementsTweak = Config.Bind("General", "Skill requirements tweak", SkillRequirementsTweak, "No more prerequisites or level requirements for skills");
-            //_negativeSkillPointsTweak = Config.Bind("General", "Negative skills tweak", NegativeSkillPointsTweak, "Skill points can now go negative");
-            //_ultimateSkillsTweak = Config.Bind("General", "Ultimate skills tweak", UltimateSkillsTweak, "Ultimates can now be chosen at any level");
             _removeObstaclesTweak = Config.Bind("General", "Remove obstacles tweak", RemoveObstaclesTweak, "Diamond blocks, levitatable blocks, green vines and melody walls are removed");
             _torchesTweak = Config.Bind("General", "Torches tweak", TorchesTweak, "Torches are initialized enkindled");
             _hiddenWallsTweak = Config.Bind("General", "Hidden walls tweak", HiddenWallsTweak, "Hidden walls are no longer hidden");
@@ -141,236 +129,206 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 _expMultiplier.Value = ExpMultiplier;
             }
 
-            const string pluginName = ModName;
-
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Exp Multiplier",
-                    () => $"{Math.Round(_expMultiplier.Value * 100f, 1)}%",
-                    direction => _expMultiplier.Value = (_expMultiplier.Value + direction * 0.01f).Clamp(0.0f, 100.0f),
-                    () => ModsMenu.CreateOptionsPercentRange(0.0f, 11.75f, 0.25f),
-                    newValue => _expMultiplier.Value = (float.Parse(newValue.Replace("%", "")) / 100f).Clamp(0.0f, 100.0f),
-                    setDefaultValueFunc: () => _expMultiplier.Value = ExpMultiplier);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Egg Reward Stars",
-                    () => $"{_alwaysRewardEggs.Value}",
-                    direction => _alwaysRewardEggs.Value = (_alwaysRewardEggs.Value + direction).Clamp(1, 7),
-                    () => ModsMenu.CreateOptionsIntRange(1, 7, 1),
-                    newValue => _alwaysRewardEggs.Value = (int.Parse(newValue)).Clamp(1, 7),
-                    setDefaultValueFunc: () => _alwaysRewardEggs.Value = AlwaysRewardEggs);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Keeper Equip Upgrade",
-                    () => $"{_keeperUpgradeEquipmentLevel.Value}",
-                    direction => _keeperUpgradeEquipmentLevel.Value = (_keeperUpgradeEquipmentLevel.Value + direction).Clamp(1, 999),
-                    () => ModsMenu.CreateOptionsIntRange(1, 115, 5),
-                    newValue => _keeperUpgradeEquipmentLevel.Value = (int.Parse(newValue)).Clamp(1, 999),
-                    setDefaultValueFunc: () => _keeperUpgradeEquipmentLevel.Value = KeeperUpgradeEquipmentLevel);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Keeper Max Upgrade",
-                    () => $"{_keeperMaxEquipmentLevel.Value}",
-                    direction => _keeperMaxEquipmentLevel.Value = (_keeperMaxEquipmentLevel.Value + direction).Clamp(1, 999),
-                    () => ModsMenu.CreateOptionsIntRange(1, 115, 5),
-                    newValue => _keeperMaxEquipmentLevel.Value = (int.Parse(newValue)).Clamp(1, 999),
-                    setDefaultValueFunc: () => _keeperMaxEquipmentLevel.Value = KeeperMaxEquipmentLevel);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Keeper Rank Mod",
-                    () => $"{_keeperRankMod.Value}",
-                    direction => _keeperRankMod.Value = (_keeperRankMod.Value + direction).Clamp(-27, 0),
-                    () => ModsMenu.CreateOptionsIntRange(-27, 0, 1),
-                    newValue => _keeperRankMod.Value = (int.Parse(newValue)).Clamp(-27, 0),
-                    setDefaultValueFunc: () => _keeperRankMod.Value = KeeperRankMod);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Level Badge - Enabled",
-                    () => $"{_levelBadgeTweak.Value}",
-                    _ => _levelBadgeTweak.Value = !_levelBadgeTweak.Value,
-                    setDefaultValueFunc: () => _levelBadgeTweak.Value = LevelBadgeTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Unlimited Gold - Enabled",
-                    () => $"{_unlimitedGold.Value}",
-                    _ => _unlimitedGold.Value = !_unlimitedGold.Value,
-                    setDefaultValueFunc: () => _unlimitedGold.Value = UnlimitedGold);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Unlimited Items - Enabled",
-                    () => $"{_unlimitedItemUse.Value}",
-                    _ => _unlimitedItemUse.Value = !_unlimitedItemUse.Value,
-                    setDefaultValueFunc: () => _unlimitedItemUse.Value = UnlimitedItemUse);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Open Doors - Enabled",
-                    () => $"{_openDoorsTweak.Value}",
-                    _ => _openDoorsTweak.Value = !_openDoorsTweak.Value,
-                    setDefaultValueFunc: () => _openDoorsTweak.Value = OpenDoorsTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Blob Key - Enabled",
-                    () => $"{_blobKeyTweak.Value}",
-                    _ => _blobKeyTweak.Value = !_blobKeyTweak.Value,
-                    setDefaultValueFunc: () => _blobKeyTweak.Value = BlobKeyTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Magical Vines - Enabled",
-                    () => $"{_magicalVinesTweak.Value}",
-                    _ => _magicalVinesTweak.Value = !_magicalVinesTweak.Value,
-                    setDefaultValueFunc: () => _magicalVinesTweak.Value = MagicalVinesTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Visible Platforms - Enabled",
-                    () => $"{_invisiblePlatformsTweak.Value}",
-                    _ => _invisiblePlatformsTweak.Value = !_invisiblePlatformsTweak.Value,
-                    setDefaultValueFunc: () => _invisiblePlatformsTweak.Value = InvisiblePlatformsTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Mounts - Enabled",
-                    () => $"{_mountsTweak.Value}",
-                    _ => _mountsTweak.Value = !_mountsTweak.Value,
-                    setDefaultValueFunc: () => _mountsTweak.Value = MountsTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Flying / Swimming - Enabled",
-                    () => $"{_flyingSwimmingTweak.Value}",
-                    _ => _flyingSwimmingTweak.Value = !_flyingSwimmingTweak.Value,
-                    setDefaultValueFunc: () => _flyingSwimmingTweak.Value = FlyingSwimmingTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Darkness - Enabled",
-                    () => $"{_darknessTweak.Value}",
-                    _ => _darknessTweak.Value = !_darknessTweak.Value,
-                    setDefaultValueFunc: () => _darknessTweak.Value = DarknessTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Skills Tweaks - Enabled",
-                    () => $"{_skillsTweaks.Value}",
-                    _ => _skillsTweaks.Value = !_skillsTweaks.Value,
-                    setDefaultValueFunc: () => _skillsTweaks.Value = SkillsTweaks);
-
-                //ModsMenu.TryAddOption(
-                //    pluginName,
-                //    "Unlearn Skills - Enabled",
-                //    () => $"{_unlearnSkillsTweak.Value}",
-                //    _ => _unlearnSkillsTweak.Value = !_unlearnSkillsTweak.Value,
-                //    setDefaultValueFunc: () => _unlearnSkillsTweak.Value = UnlearnSkillsTweak);
-
-                //ModsMenu.TryAddOption(
-                //    pluginName,
-                //    "Skill Requirements - Enabled",
-                //    () => $"{_skillRequirementsTweak.Value}",
-                //    _ => _skillRequirementsTweak.Value = !_skillRequirementsTweak.Value,
-                //    setDefaultValueFunc: () => _skillRequirementsTweak.Value = SkillRequirementsTweak);
-
-                //ModsMenu.TryAddOption(
-                //    pluginName,
-                //    "Negative Skill Points - Ena..",
-                //    () => $"{_negativeSkillPointsTweak.Value}",
-                //    _ => _negativeSkillPointsTweak.Value = !_negativeSkillPointsTweak.Value,
-                //    setDefaultValueFunc: () => _negativeSkillPointsTweak.Value = NegativeSkillPointsTweak);
-
-                //ModsMenu.TryAddOption(
-                //    pluginName,
-                //    "Ultimate Skills - Enabled",
-                //    () => $"{_ultimateSkillsTweak.Value}",
-                //    _ => _ultimateSkillsTweak.Value = !_ultimateSkillsTweak.Value,
-                //    setDefaultValueFunc: () => _ultimateSkillsTweak.Value = UltimateSkillsTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Remove Obstacles - Ena..",
-                    () => $"{_removeObstaclesTweak.Value}",
-                    _ => _removeObstaclesTweak.Value = !_removeObstaclesTweak.Value,
-                    setDefaultValueFunc: () => _removeObstaclesTweak.Value = RemoveObstaclesTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Torches - Enabled",
-                    () => $"{_torchesTweak.Value}",
-                    _ => _torchesTweak.Value = !_torchesTweak.Value,
-                    setDefaultValueFunc: () => _torchesTweak.Value = TorchesTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Hidden Walls - Enabled",
-                    () => $"{_hiddenWallsTweak.Value}",
-                    _ => _hiddenWallsTweak.Value = !_hiddenWallsTweak.Value,
-                    setDefaultValueFunc: () => _hiddenWallsTweak.Value = HiddenWallsTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Remove Sound - Enabled",
-                    () => $"{_removeSwitchMonstersSoundTweak.Value}",
-                    _ => _removeSwitchMonstersSoundTweak.Value = !_removeSwitchMonstersSoundTweak.Value,
-                    setDefaultValueFunc: () => _removeSwitchMonstersSoundTweak.Value = RemoveSwitchMonstersSoundTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Keys - Enabled",
-                    () => $"{_keysTweak.Value}",
-                    _ => _keysTweak.Value = !_keysTweak.Value,
-                    setDefaultValueFunc: () => _keysTweak.Value = KeysTweak);
-
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Warm Underwear - Enabled",
-                    () => $"{_warmUnderwearTweak.Value}",
+                ModList.TryAddOption(
+                    "GBAWU",
+                    "Always Warm Underwear",
+                    () => _warmUnderwearTweak.Value ? "Enabled" : "Disabled",
                     _ => _warmUnderwearTweak.Value = !_warmUnderwearTweak.Value,
                     setDefaultValueFunc: () => _warmUnderwearTweak.Value = WarmUnderwearTweak);
 
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Fix Blob Form - Enabled",
-                    () => $"{_fixBlobForm.Value}",
+                ModList.TryAddOption(
+                    "GBB",
+                    "Blob Key Not Required",
+                    () => _blobKeyTweak.Value ? "Enabled" : "Disabled",
+                    _ => _blobKeyTweak.Value = !_blobKeyTweak.Value,
+                    setDefaultValueFunc: () => _blobKeyTweak.Value = BlobKeyTweak);
+
+                ModList.TryAddOption(
+                    "GBB",
+                    "Blob Form Fix",
+                    () => _fixBlobForm.Value ? "Enabled" : "Disabled",
                     _ => _fixBlobForm.Value = !_fixBlobForm.Value,
                     setDefaultValueFunc: () => _fixBlobForm.Value = FixBlobForm);
 
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Replace Morph Ball - Ena..",
-                    () => $"{_replaceMorphWithBlobTweak.Value}",
+                ModList.TryAddOption(
+                    "GBB",
+                    "Blob Replaces Morph Ball",
+                    () => _replaceMorphWithBlobTweak.Value ? "Enabled" : "Disabled",
                     _ => _replaceMorphWithBlobTweak.Value = !_replaceMorphWithBlobTweak.Value,
                     setDefaultValueFunc: () => _replaceMorphWithBlobTweak.Value = ReplaceMorphWithBlobTweak);
 
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "No Infinity Buff - Enabled",
-                    () => $"{_disableInfinityBuff.Value}",
-                    _ => _disableInfinityBuff.Value = !_disableInfinityBuff.Value,
-                    setDefaultValueFunc: () => _disableInfinityBuff.Value = DisableInfinityBuff);
+                ModList.TryAddOption(
+                    "GBD",
+                    "Darkness",
+                    () => _darknessTweak.Value ? "Enabled" : "Disabled",
+                    _ => _darknessTweak.Value = !_darknessTweak.Value,
+                    setDefaultValueFunc: () => _darknessTweak.Value = DarknessTweak);
 
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "Fix Upgrade Menu - Enabled",
-                    () => $"{_fixUpgradeMenu.Value}",
+                ModList.TryAddOption(
+                    "GBEGG",
+                    "Egg Reward Stars",
+                    () => _alwaysRewardEggs.Value < 7 ? $"{_alwaysRewardEggs.Value}" : "Disabled",
+                    direction => _alwaysRewardEggs.Value = (_alwaysRewardEggs.Value + direction).Clamp(1, 7),
+                    () => ModList.CreateOptionsIntRange(1, 7, 1),
+                    newValue => _alwaysRewardEggs.Value = (int.Parse(newValue)).Clamp(1, 7),
+                    setDefaultValueFunc: () => _alwaysRewardEggs.Value = AlwaysRewardEggs);
+
+                ModList.TryAddOption(
+                    "GBEXP",
+                    "Exp Multiplier",
+                    () => _expMultiplier.Value == 1.0f ? "Disabled" : $"{Math.Round(_expMultiplier.Value * 100f, 1)}%",
+                    direction => _expMultiplier.Value = (_expMultiplier.Value + direction * 0.01f).Clamp(0.0f, 100.0f),
+                    () => ModList.CreateOptionsPercentRange(0.0f, 11.75f, 0.25f),
+                    newValue => _expMultiplier.Value = (float.Parse(newValue.Replace("%", "")) / 100f).Clamp(0.0f, 100.0f),
+                    setDefaultValueFunc: () => _expMultiplier.Value = ExpMultiplier);
+
+                ModList.TryAddOption(
+                    "GBFS",
+                    "Flying / Swimming",
+                    () => _flyingSwimmingTweak.Value ? "Enabled" : "Disabled",
+                    _ => _flyingSwimmingTweak.Value = !_flyingSwimmingTweak.Value,
+                    setDefaultValueFunc: () => _flyingSwimmingTweak.Value = FlyingSwimmingTweak);
+
+                ModList.TryAddOption(
+                    "GBFUM",
+                    "Fix Upgrade Menu",
+                    () => _fixUpgradeMenu.Value ? "Enabled" : "Disabled",
                     _ => _fixUpgradeMenu.Value = !_fixUpgradeMenu.Value,
                     setDefaultValueFunc: () => _fixUpgradeMenu.Value = FixUpgradeMenu);
 
-                ModsMenu.TryAddOption(
-                    pluginName,
-                    "No Random Keepers - Ena..",
-                    () => $"{_disableRandomKeeperMonsters.Value}",
+                ModList.TryAddOption(
+                    "GBHW",
+                    "Hidden Walls",
+                    () => _hiddenWallsTweak.Value ? "Enabled" : "Disabled",
+                    _ => _hiddenWallsTweak.Value = !_hiddenWallsTweak.Value,
+                    setDefaultValueFunc: () => _hiddenWallsTweak.Value = HiddenWallsTweak);
+
+                ModList.TryAddOption(
+                    "GBIP",
+                    "Invisible Platforms",
+                    () => _invisiblePlatformsTweak.Value ? "Enabled" : "Disabled",
+                    _ => _invisiblePlatformsTweak.Value = !_invisiblePlatformsTweak.Value,
+                    setDefaultValueFunc: () => _invisiblePlatformsTweak.Value = InvisiblePlatformsTweak);
+
+                ModList.TryAddOption(
+                    "GBK",
+                    "Keeper Gear Upgrade Full",
+                    () => _keeperMaxEquipmentLevel.Value < 100 ? $"{_keeperMaxEquipmentLevel.Value}" : "Disabled",
+                    direction => _keeperMaxEquipmentLevel.Value = (_keeperMaxEquipmentLevel.Value + direction).Clamp(1, 999),
+                    () => ModList.CreateOptionsIntRange(1, 100, 10),
+                    newValue => _keeperMaxEquipmentLevel.Value = (int.Parse(newValue)).Clamp(1, 999),
+                    setDefaultValueFunc: () => _keeperMaxEquipmentLevel.Value = KeeperMaxEquipmentLevel);
+
+                ModList.TryAddOption(
+                    "GBK",
+                    "Keeper Gear Upgrade Once",
+                    () => _keeperUpgradeEquipmentLevel.Value < 100 ? $"{_keeperUpgradeEquipmentLevel.Value}" : "Disabled",
+                    direction => _keeperUpgradeEquipmentLevel.Value = (_keeperUpgradeEquipmentLevel.Value + direction).Clamp(1, 999),
+                    () => ModList.CreateOptionsIntRange(1, 100, 10),
+                    newValue => _keeperUpgradeEquipmentLevel.Value = (int.Parse(newValue)).Clamp(1, 999),
+                    setDefaultValueFunc: () => _keeperUpgradeEquipmentLevel.Value = KeeperUpgradeEquipmentLevel);
+
+                ModList.TryAddOption(
+                    "GBK",
+                    "Keeper Rank Modifier",
+                    () => _keeperRankMod.Value < 0 ? $"{_keeperRankMod.Value}" : "Disabled",
+                    direction => _keeperRankMod.Value = (_keeperRankMod.Value + direction).Clamp(-27, 0),
+                    () => ModList.CreateOptionsIntRange(-27, 0, 1),
+                    newValue => _keeperRankMod.Value = (int.Parse(newValue)).Clamp(-27, 0),
+                    setDefaultValueFunc: () => _keeperRankMod.Value = KeeperRankMod);
+
+                ModList.TryAddOption(
+                    "GBK",
+                    "No Random Keepers",
+                    () => _disableRandomKeeperMonsters.Value ? "Enabled" : "Disabled",
                     _ => _disableRandomKeeperMonsters.Value = !_disableRandomKeeperMonsters.Value,
                     setDefaultValueFunc: () => _disableRandomKeeperMonsters.Value = DisableRandomKeeperMonsters);
+
+                ModList.TryAddOption(
+                    "GBLB",
+                    "Level Badge",
+                    () => _levelBadgeTweak.Value ? "Enabled" : "Disabled",
+                    _ => _levelBadgeTweak.Value = !_levelBadgeTweak.Value,
+                    setDefaultValueFunc: () => _levelBadgeTweak.Value = LevelBadgeTweak);
+
+                ModList.TryAddOption(
+                    "GBMV",
+                    "Magical Vines",
+                    () => _magicalVinesTweak.Value ? "Enabled" : "Disabled",
+                    _ => _magicalVinesTweak.Value = !_magicalVinesTweak.Value,
+                    setDefaultValueFunc: () => _magicalVinesTweak.Value = MagicalVinesTweak);
+
+                ModList.TryAddOption(
+                    "GBM",
+                    "Mounts",
+                    () => _mountsTweak.Value ? "Enabled" : "Disabled",
+                    _ => _mountsTweak.Value = !_mountsTweak.Value,
+                    setDefaultValueFunc: () => _mountsTweak.Value = MountsTweak);
+
+                ModList.TryAddOption(
+                    "GBNIB",
+                    "No Infinity Buff",
+                    () => _disableInfinityBuff.Value ? "Enabled" : "Disabled",
+                    _ => _disableInfinityBuff.Value = !_disableInfinityBuff.Value,
+                    setDefaultValueFunc: () => _disableInfinityBuff.Value = DisableInfinityBuff);
+
+                ModList.TryAddOption(
+                    "GBNKR",
+                    "No Keys Required",
+                    () => _keysTweak.Value ? "Enabled" : "Disabled",
+                    _ => _keysTweak.Value = !_keysTweak.Value,
+                    setDefaultValueFunc: () => _keysTweak.Value = KeysTweak);
+
+                ModList.TryAddOption(
+                    "GBOD",
+                    "Open Doors",
+                    () => _openDoorsTweak.Value ? "Enabled" : "Disabled",
+                    _ => _openDoorsTweak.Value = !_openDoorsTweak.Value,
+                    setDefaultValueFunc: () => _openDoorsTweak.Value = OpenDoorsTweak);
+
+                ModList.TryAddOption(
+                    "GBRAS",
+                    "Remove Annoying Sound",
+                    () => _removeSwitchMonstersSoundTweak.Value ? "Enabled" : "Disabled",
+                    _ => _removeSwitchMonstersSoundTweak.Value = !_removeSwitchMonstersSoundTweak.Value,
+                    setDefaultValueFunc: () => _removeSwitchMonstersSoundTweak.Value = RemoveSwitchMonstersSoundTweak);
+
+                ModList.TryAddOption(
+                    "GBRO",
+                    "Remove Obstacles",
+                    () => _removeObstaclesTweak.Value ? "Enabled" : "Disabled",
+                    _ => _removeObstaclesTweak.Value = !_removeObstaclesTweak.Value,
+                    setDefaultValueFunc: () => _removeObstaclesTweak.Value = RemoveObstaclesTweak);
+
+                ModList.TryAddOption(
+                    "GBST",
+                    "Skill Tweaks",
+                    () => _skillsTweaks.Value ? "Enabled" : "Disabled",
+                    _ => _skillsTweaks.Value = !_skillsTweaks.Value,
+                    setDefaultValueFunc: () => _skillsTweaks.Value = SkillsTweaks);
+
+                ModList.TryAddOption(
+                    "GBT",
+                    "Torches",
+                    () => _torchesTweak.Value ? "Enabled" : "Disabled",
+                    _ => _torchesTweak.Value = !_torchesTweak.Value,
+                    setDefaultValueFunc: () => _torchesTweak.Value = TorchesTweak);
+
+                ModList.TryAddOption(
+                    "GBUG",
+                    "Unlimited Gold",
+                    () => _unlimitedGold.Value ? "Enabled" : "Disabled",
+                    _ => _unlimitedGold.Value = !_unlimitedGold.Value,
+                    setDefaultValueFunc: () => _unlimitedGold.Value = UnlimitedGold);
+
+                ModList.TryAddOption(
+                    "GBUI",
+                    "Unlimited Items",
+                    () => _unlimitedItemUse.Value ? "Enabled" : "Disabled",
+                    _ => _unlimitedItemUse.Value = !_unlimitedItemUse.Value,
+                    setDefaultValueFunc: () => _unlimitedItemUse.Value = UnlimitedItemUse);
             };
 
             _log = Logger;
@@ -434,7 +392,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                         {
                             equipment = equipment.UpgradesTo.GetComponent<Equipment>();
                         }
-                        //_log.LogDebug($"NPCKeeperMonster max equipment: {equipment.GetName()}");
+                        //_log.LogDebug($"NPCKeeperMonster fully upgraded equipment: {equipment.GetName()}");
                         __result = equipment;
                         return false;
                     }
@@ -514,11 +472,6 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(UpgradeMenu __instance, ref int index)
             {
-                if (!_fixUpgradeMenu.Value)
-                {
-                    return true;
-                }
-
                 __instance.ItemList.SetLocked(locked: false);
                 if (index != 0)
                 {
@@ -535,13 +488,24 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 {
                     equipment = inventoryItem.Equipment;
                     Equipment component = inventoryItem.Equipment.UpgradesTo.GetComponent<Equipment>();
+                    if (_unlimitedItemUse.Value)
+                    {
+                        UpgradeMenuConfirmedMenuPopupTemp = true;
+                    }
                     PlayerController.Instance.Inventory.RemoveItem(inventoryItem.Item);
+                    if (_unlimitedItemUse.Value)
+                    {
+                        UpgradeMenuConfirmedMenuPopupTemp = false;
+                    }
                     PlayerController.Instance.Inventory.AddItem(component);
                     InventoryItem item = PlayerController.Instance.Inventory.GetItem(component);
-                    //if (item.Equipment.UpgradesTo != null)
-                    //{
-                    //    __instance.PagedItemList.SelectDisplayable(item);
-                    //}
+                    if (!_fixUpgradeMenu.Value)
+                    {
+                        if (item.Equipment.UpgradesTo != null)
+                        {
+                            __instance.PagedItemList.SelectDisplayable(item);
+                        }
+                    }
                 }
                 foreach (ItemQuantity upgradeMaterial in equipment.UpgradeMaterials)
                 {
@@ -1097,7 +1061,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(InventoryManager __instance, ref BaseItem item)
             {
-                if (!_unlimitedItemUse.Value || (item != null && item.GetComponent<Equipment>() != null))
+                if (!_unlimitedItemUse.Value || UpgradeMenuConfirmedMenuPopupTemp || (item != null && item.GetName() == "Wooden Stick"))
                 {
                     return true;
                 }

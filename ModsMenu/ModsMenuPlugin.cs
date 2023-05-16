@@ -4,21 +4,21 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS.OptionMenu;
+using garfieldbanks.MonsterSanctuary.ModsMenu.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenu.OptionMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
+namespace garfieldbanks.MonsterSanctuary.ModsMenu
 {
     [BepInPlugin(ModGUID, ModName, ModVersion)]
     public class ModsMenuPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.ModsMenu";
         public const string ModName = "Mods Menu";
-        public const string ModVersion = "1.0.0";
+        public const string ModVersion = "2.0.0";
 
         private static ManualLogSource _log;
 
@@ -42,7 +42,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
         [UsedImplicitly]
         private void Awake()
         {
-            ModsMenu.Inst.SetLogger(Logger);
+            ModList.Inst.SetLogger(Logger);
 
             new Harmony(ModGUID).PatchAll();
 
@@ -145,7 +145,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
             {
                 _optionsMenu = __instance;
 
-                ModsMenu.InvokeRegisterOptions();
+                ModList.InvokeRegisterOptions();
             }
 
             /// <summary>
@@ -159,7 +159,6 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
             }
         }
 
-        #region Category
 
         [HarmonyPatch(typeof(OptionsMenu), "OnCategoryHovered")]
         private class OptionsMenuOnCategoryHoveredPatch
@@ -247,9 +246,6 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
             }
         }
 
-        #endregion
-
-        #region Options
 
         [HarmonyPatch(typeof(OptionsMenu), "OnOptionsSelected")]
         private class OptionsMenuOnOptionsSelectedPatch
@@ -364,9 +360,6 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
             }
         }
 
-        #endregion
-
-        #region Footer
 
         [HarmonyPatch(typeof(OptionsMenu), "OnFooterSelected")]
         private class OptionsMenuOnFooterSelectedPatch
@@ -435,9 +428,6 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
             }
         }
 
-        #endregion
-
-        #region Navigation fixes
 
         [HarmonyPatch(typeof(OptionsMenu), "ProcessMouseInput")]
         private class OptionsMenuProcessMouseInputPatch
@@ -505,6 +495,5 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenuNS
             }
         }
 
-        #endregion
     }
 }

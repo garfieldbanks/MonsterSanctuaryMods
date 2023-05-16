@@ -2,8 +2,8 @@
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS.Extensions;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
+using garfieldbanks.MonsterSanctuary.ModsMenu.Extensions;
 using HarmonyLib;
 using JetBrains.Annotations;
 
@@ -14,8 +14,8 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
     public class LevelCapsPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.LevelCaps";
-        public const string ModName = "LevelCaps";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Level Caps";
+        public const string ModVersion = "2.0.0";
 
         private static int _defaultMaxLevel;
 
@@ -45,14 +45,14 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
             _maxLevelSelf.Value = _maxLevelSelf.Value.Clamp(1, 99);
             _maxLevelEnemy.Value = _maxLevelEnemy.Value.Clamp(1, 99);
 
-            const string pluginName = ModName;
+            const string pluginName = "GBLC";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Level Caps",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ =>
                     {
                         _isEnabled.Value = !_isEnabled.Value;
@@ -61,19 +61,19 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
                     },
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
 
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "MonsterLvl=MaxPlayerLvl",
-                    () => $"{_maxMonsterMatchPlayer.Value}",
-                    _ =>
-                    {
-                        _maxMonsterMatchPlayer.Value = !_maxMonsterMatchPlayer.Value;
-                    },
-                    setDefaultValueFunc: () => _maxMonsterMatchPlayer.Value = MaxMonsterMatchPlayerDefault);
+                    "Enemy Level Cap",
+                    () => $"{_maxLevelEnemy.Value}",
+                    direction => _maxLevelEnemy.Value = (_maxLevelEnemy.Value + direction).Clamp(1, 99),
+                    () => ModList.CreateOptionsIntRange(1, 99, 10),
+                    newValue => _maxLevelEnemy.Value = int.Parse(newValue),
+                    () => !_isEnabled.Value,
+                    setDefaultValueFunc: () => _maxLevelEnemy.Value = MaxLevelEnemyDefault);
 
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Level Cap (self)",
+                    "Player Level Cap",
                     () => $"{_maxLevelSelf.Value}",
                     direction =>
                     {
@@ -81,7 +81,7 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
 
                         SetLevelCap();
                     },
-                    () => ModsMenu.CreateOptionsIntRange(1, 99, 10),
+                    () => ModList.CreateOptionsIntRange(1, 99, 10),
                     newValue =>
                     {
                         _maxLevelSelf.Value = int.Parse(newValue);
@@ -91,15 +91,16 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
                     () => !_isEnabled.Value,
                     setDefaultValueFunc: () => _maxLevelSelf.Value = MaxLevelSelfDefault);
 
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Level Cap (enemies)",
-                    () => $"{_maxLevelEnemy.Value}",
-                    direction => _maxLevelEnemy.Value = (_maxLevelEnemy.Value + direction).Clamp(1, 99),
-                    () => ModsMenu.CreateOptionsIntRange(1, 99, 10),
-                    newValue => _maxLevelEnemy.Value = int.Parse(newValue),
-                    () => !_isEnabled.Value,
-                    setDefaultValueFunc: () => _maxLevelEnemy.Value = MaxLevelEnemyDefault);
+                    "Enemy Lvl Match Player Lvl",
+                    () => _maxMonsterMatchPlayer.Value ? "Enabled" : "Disabled",
+                    _ =>
+                    {
+                        _maxMonsterMatchPlayer.Value = !_maxMonsterMatchPlayer.Value;
+                    },
+                    determineDisabledFunc: () => !_isEnabled.Value,
+                    setDefaultValueFunc: () => _maxMonsterMatchPlayer.Value = MaxMonsterMatchPlayerDefault);
             };
 
             new Harmony(ModGUID).PatchAll();

@@ -1,6 +1,6 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -12,8 +12,8 @@ namespace garfieldbanks.MonsterSanctuary.StartButtonConfirm
     public class StartButtonConfirmPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.StartButtonConfirm";
-        public const string ModName = "StartButtonConfirm";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Start Button Confirm";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -23,14 +23,14 @@ namespace garfieldbanks.MonsterSanctuary.StartButtonConfirm
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBSBC";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Start Button Confirm",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

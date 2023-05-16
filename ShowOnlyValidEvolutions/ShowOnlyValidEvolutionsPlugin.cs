@@ -2,7 +2,7 @@
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 
@@ -13,8 +13,8 @@ namespace garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions
     public class ShowOnlyValidEvolutionsPlugin : BaseUnityPlugin
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions";
-        public const string ModName = "ShowOnlyValidEvolutions";
-        public const string ModVersion = "1.0.0";
+        public const string ModName = "Show Only Valid Evolutions";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -24,14 +24,14 @@ namespace garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBSOVE";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Show Only Valid Evolutions",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

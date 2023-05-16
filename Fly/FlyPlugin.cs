@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using garfieldbanks.MonsterSanctuary.ModsMenuNS;
+using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
@@ -14,7 +14,7 @@ namespace garfieldbanks.MonsterSanctuary.Fly
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.Fly";
         public const string ModName = "Fly";
-        public const string ModVersion = "1.0.0";
+        public const string ModVersion = "2.0.0";
 
         private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
@@ -24,14 +24,14 @@ namespace garfieldbanks.MonsterSanctuary.Fly
         {
             _isEnabled = Config.Bind("General", "Enable", IsEnabledDefault, "Enable the mod");
 
-            const string pluginName = ModName;
+            const string pluginName = "GBF";
 
-            ModsMenu.RegisterOptionsEvt += (_, _) =>
+            ModList.RegisterOptionsEvt += (_, _) =>
             {
-                ModsMenu.TryAddOption(
+                ModList.TryAddOption(
                     pluginName,
-                    "Enabled",
-                    () => $"{_isEnabled.Value}",
+                    "Fly",
+                    () => _isEnabled.Value ? "Enabled" : "Disabled",
                     _ => _isEnabled.Value = !_isEnabled.Value,
                     setDefaultValueFunc: () => _isEnabled.Value = IsEnabledDefault);
             };

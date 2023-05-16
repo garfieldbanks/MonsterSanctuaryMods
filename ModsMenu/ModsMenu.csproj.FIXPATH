@@ -7,7 +7,7 @@
     <Version>1.0.2</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>9.0</LangVersion>
-    <RootNamespace>garfieldbanks.MonsterSanctuary.ModsMenuNS</RootNamespace>
+    <RootNamespace>garfieldbanks.MonsterSanctuary.ModsMenu</RootNamespace>
     <Authors>garfieldbanks</Authors>
     <Product>ModsMenu</Product>
   </PropertyGroup>
