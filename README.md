@@ -27,7 +27,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Dumps some data into .json files in the same location as the .dll file.
 
 ### [GBDUE] Display Unhatched Eggs
-- Display a \* before unhatched eggs' name.
+- Display a \* before unhatched egg names.
 
 ### [GBF] Fly
 - Infinite jumping.
@@ -41,21 +41,22 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 ### [GBHMLE] Hatch Max Level Eggs
 - Changes the level eggs are hatched at to equal your highest level monster, instead of highest level monster minus two.
 
-### [GBLC] Level Caps
+### [GBLC]
+#### Level Caps
 - Custom level cap for your monsters and enemies.
 #### Enemy Lvl Match Player Lvl
 - Sets enemy monster level to the highest monster level of the player.
 
-### [GBLR] Lucky Randomizer
+### [GBLR]
+#### Lucky Randomizer
 - Based on the randomizer mod by eradev.
 - Fixes the issue of the original mod which prevented blog burg chambers from opening.
 - Fixes the issue of the original mod which prevented certain essential items from being received.
 - Has options to randomize rewards from monster battles and/or chests. Items are randomly selected from items you don't already have. Once you have all items, you'll receive items with the lowest quantity in your inventory.
+#### Allow Multiple Equipment
+- This option is for anyone not using the unlimited items tweak. It allows the randomizer to give you extra equipment.
 
-### Mods Menu
-- All my mods use this to be able to toggle on/off in-game.
-
-### My Tweaks
+<!-- MyTweaks -->
 #### [GBAWU] Always Warm Underwear
 - Warm underwear is no longer required to enter cold water.
 
@@ -111,7 +112,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 #### [GBNIB] No Infinity Buff
 - Infinity Buff is prevented from being applied to all monsters.
 
-#### [GBNIB] No Keys Required
+#### [GBNKR] No Keys Required
 - Keys are no longer required to open any doors.
 
 #### [GBOD] Open Doors
@@ -137,6 +138,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 
 #### [GBUI] Unlimited Items
 - Items are not removed upon being used or equipped or sold. Wooden sticks can still be sold. Equipment is only removed when it is being upgraded to a higher level.
+<!-- end of MyTweaks -->
 
 ### [GBNG+] New Game Plus
 #### Monster Abilities
@@ -148,6 +150,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 
 ### [GBRR] Random Randomizer
 - Same mod as the one by eradev except for a few bug fixes.
+- Randomize random encounters and chest content in Randomizer mode.
 - Fixes the issue of the original mod which prevented blog burg chambers from opening.
 - Fixes the issue of the original mod which prevented certain essential items from being received.
 
@@ -158,7 +161,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 - Change the monster name's color depending on its shift in certain screens.
 - Fixes a bug of the original mod for unshifted monsters when donating to the monster army.
 
-### [GBSOVE] Show Only Valid Evolution
+### [GBSOVE] Show Only Valid Evolutions
 - Only display valid monsters when choosing a Catalyst target.
 
 ## Credits
