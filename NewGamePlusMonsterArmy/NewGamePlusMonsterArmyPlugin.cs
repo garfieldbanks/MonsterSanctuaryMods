@@ -1,11 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
-using System.Linq;
-using UnityEngine;
 
 namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
 {

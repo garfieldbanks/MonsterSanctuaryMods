@@ -1,10 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs
 {

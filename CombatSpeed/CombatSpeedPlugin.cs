@@ -1,11 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using HarmonyLib;
 using JetBrains.Annotations;
-using UnityEngine;
 using garfieldbanks.MonsterSanctuary.ModsMenu;
-using garfieldbanks.MonsterSanctuary.ModsMenu.Extensions;
 
 namespace garfieldbanks.MonsterSanctuary.CombatSpeed
 {
