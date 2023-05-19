@@ -420,7 +420,6 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+4") && // remove +4 items
                             !x.GetComponent<BaseItem>().GetName().EndsWith("+5") && // remove +5 items
                             !x.GetComponent<BaseItem>().GetName().Contains("Wooden Stick") && // remove wooden stick
-                            !x.GetComponent<BaseItem>().GetName().Contains("Level Badge") && // remove level badges
                             !x.GetComponent<BaseItem>().GetName().Contains("Reward Box") && // remove reward boxes
                             !x.GetComponent<BaseItem>().GetName().Contains("Craft Box") && // remove craft boxes
                             !blacklistedItems.Contains(x.GetComponent<BaseItem>().ID) &&  // Remove blacklisted items
@@ -447,6 +446,15 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                         var split = item.GetComponent<BaseItem>().GetName().Split('+');
                         string baseItemName = split[0].Trim();
                         if (!equipment.ContainsKey(baseItemName))
+                        {
+                            _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                            _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
+                            extras++;
+                        }
+                    }
+                    else if (item.GetComponent<Consumable>() != null && item.GetComponent<BaseItem>().GetName().Contains("Level Badge"))
+                    {
+                        if (item.GetComponent<BaseItem>().GetName() == "Level Badge")
                         {
                             _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
                             _possibleItemsList.Add(new Tuple<GameObject, int>(item, 0));
