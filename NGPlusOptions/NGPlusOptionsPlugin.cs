@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -15,14 +18,13 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.NGPlusOptions";
         public const string ModName = "NG+ Starting Options";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
 
         private static SaveGameMenu _saveGameMenu;
-        private static int _selectedDifficultyIndex;
-        private static bool _ngPlusOptionsDone;
+        private static bool _ngPlusOptionsDone = false;
 
         // ReSharper disable once NotAccessedField.Local
         private static ManualLogSource _log;
@@ -56,10 +58,14 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
             PopupController.Instance.ShowRequest(
                 Utils.LOCA("NG+ Options"),
                 Utils.LOCA("Unshift all monsters?"),
-                ConfirmUnshiftMonsters,
+                WaitConfirmUnshiftMonsters,
                 AskSellEquipment,
-                true
-            );
+                true);
+        }
+
+        private static void WaitConfirmUnshiftMonsters()
+        {
+            Timer.StartTimer(_saveGameMenu.MainMenu.gameObject, 0.1f, ConfirmUnshiftMonsters);
         }
 
         private static void ConfirmUnshiftMonsters()
@@ -80,10 +86,14 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
             PopupController.Instance.ShowRequest(
                 Utils.LOCA("NG+ Options"),
                 Utils.LOCA("Sell all weapons and accessories?"),
-                ConfirmSellEquipment,
+                WaitConfirmSellEquipment,
                 AskClearInventory,
-                true
-            );
+                true);
+        }
+
+        private static void WaitConfirmSellEquipment()
+        {
+            Timer.StartTimer(_saveGameMenu.MainMenu.gameObject, 0.1f, ConfirmSellEquipment);
         }
 
         private static void ConfirmSellEquipment()
@@ -100,22 +110,26 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
 
             Task.Run(() =>
             {
-                PopupController.Instance.ShowMessage(
-                    Utils.LOCA("NG+ Options"),
-                    Utils.LOCA("All weapons and accessories have been sold."),
-                    AskClearInventory
-                );
+            PopupController.Instance.ShowMessage(
+                Utils.LOCA("NG+ Options"),
+                Utils.LOCA("All weapons and accessories have been sold."),
+                AskClearInventory);
             });
         }
+
         private static void AskClearInventory()
         {
             PopupController.Instance.ShowRequest(
                 Utils.LOCA("NG+ Options"),
                 Utils.LOCA("Clear inventory?"),
-                ConfirmClearInventory,
+                WaitConfirmClearInventory,
                 AskClearMonsters,
-                true
-            );
+                true);
+        }
+
+        private static void WaitConfirmClearInventory()
+        {
+            Timer.StartTimer(_saveGameMenu.MainMenu.gameObject, 0.1f, ConfirmClearInventory);
         }
 
         private static void ConfirmClearInventory()
@@ -127,8 +141,7 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
                 PopupController.Instance.ShowMessage(
                     Utils.LOCA("NG+ Options"),
                     Utils.LOCA("Inventory has been cleared."),
-                    AskClearMonsters
-                );
+                    AskClearMonsters);
             });
         }
 
@@ -137,10 +150,14 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
             PopupController.Instance.ShowRequest(
                 Utils.LOCA("NG+ Options"),
                 Utils.LOCA("Clear monsters?"),
-                ConfirmClearMonsters,
+                WaitConfirmClearMonsters,
                 CompleteNGPlusOptions,
-                true
-            );
+                true);
+        }
+
+        private static void WaitConfirmClearMonsters()
+        {
+            Timer.StartTimer(_saveGameMenu.MainMenu.gameObject, 0.1f, ConfirmClearMonsters);
         }
 
         private static void ConfirmClearMonsters()
@@ -149,42 +166,136 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
 
             Task.Run(() =>
             {
-                PopupController.Instance.ShowMessage(
-                    Utils.LOCA("NG+ Options"),
-                    Utils.LOCA("Monsters have been cleared."),
-                    CompleteNGPlusOptions
-                );
+            PopupController.Instance.ShowMessage(
+                Utils.LOCA("NG+ Options"),
+                Utils.LOCA("Monsters have been cleared."),
+                CompleteNGPlusOptions);
             });
         }
 
         private static void CompleteNGPlusOptions()
         {
             _ngPlusOptionsDone = true;
-
-            AccessTools.Method(typeof(SaveGameMenu), "DifficultyChosen").Invoke(_saveGameMenu, new object[]
-            {
-                _selectedDifficultyIndex
-            });
+            _saveGameMenu.StartNewGameTransition();
         }
 
-        [HarmonyPatch(typeof(SaveGameMenu), "DifficultyChosen")]
-        private class GameControllerLoadStartingAreaPatch
+        [HarmonyPatch(typeof(SaveGameMenu), "StartNewGameTransition")]
+        private class SaveGameMenuStartNewGameTransitionPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(ref SaveGameMenu __instance, int index)
+            private static bool Prefix(ref SaveGameMenu __instance)
             {
                 if (!_isEnabled.Value || !PlayerController.Instance.NewGamePlus || _ngPlusOptionsDone)
                 {
                     _ngPlusOptionsDone = false;
-
                     return true;
                 }
-
                 _saveGameMenu = __instance;
-                _selectedDifficultyIndex = index;
-
                 AskUnshiftMonsters();
+                return false;
+            }
+        }
 
+        [HarmonyPatch(typeof(CombatController), "SetupEncounterConfigEnemies")]
+        private class CombatControllerSetupEncounterConfigEnemiesPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref CombatController __instance, ref MonsterEncounter encounter, ref bool isChampion, ref List<Monster> __result)
+            {
+                if (!_isEnabled.Value)
+                {
+                    return true;
+                }
+                List<Monster> list = new List<Monster>();
+                MonsterEncounter.EncounterConfig encounterConfig = encounter.DetermineEnemy();
+                int playerMonsterCount = PlayerController.Instance.Monsters.Active.Count + PlayerController.Instance.Monsters.Permadead.Count;
+                if (playerMonsterCount <= 0)
+                {
+                    playerMonsterCount = 1;
+                }
+                int num = Mathf.Min(3, playerMonsterCount);
+                int num2 = 0;
+                GameObject[] monster = encounterConfig.Monster;
+                foreach (GameObject gameObject in monster)
+                {
+                    if (num2 >= num)
+                    {
+                        break;
+                    }
+
+                    GameObject monsterPrefab = (encounter.DarkCatzerker ? gameObject : GameModeManager.Instance.GetReplacementMonster(gameObject));
+                    Monster component = __instance.SetupEncounterConfigEnemy(encounter, monsterPrefab).GetComponent<Monster>();
+                    list.Add(component);
+                    if (isChampion)
+                    {
+                        component.SkillManager.LearnChampionSkills(encounter, encounterConfig.Monster.Length == 1 || num2 == 1);
+                    }
+
+                    num2++;
+                }
+
+                if (ProgressManager.Instance.GetBool("SanctuaryShifted"))
+                {
+                    if (!isChampion && encounter.IsNormalEncounter)
+                    {
+                        if (ProgressManager.Instance.GetRecentEncounter(GameController.Instance.CurrentSceneName, encounter.ID, out var encounterData))
+                        {
+                            list[0].SetShift((EShift)encounterData.Monster1Shift);
+                            list[1].SetShift((EShift)encounterData.Monster2Shift);
+                            if (list.Count > 2)
+                            {
+                                list[2].SetShift((EShift)encounterData.Monster3Shift);
+                            }
+                        }
+                        else
+                        {
+                            if (UnityEngine.Random.Range(0f, 1f) < 0.25f)
+                            {
+                                int index = UnityEngine.Random.Range(0, list.Count);
+                                bool @bool = ProgressManager.Instance.GetBool("LastMonsterShifted");
+                                EShift shift = (EShift)(1 + Convert.ToInt32(@bool));
+                                list[index].SetShift(shift);
+                                ProgressManager.Instance.SetBool("LastMonsterShifted", !@bool);
+                            }
+
+                            ProgressManager.Instance.AddRecentEncounter(GameController.Instance.CurrentSceneName, encounter.ID, list[0].Shift, list[1].Shift, (list.Count > 2) ? list[2].Shift : EShift.Normal);
+                        }
+                    }
+                    else if (encounter.IsInfinityArena)
+                    {
+                        if (encounter.PredefinedMonsters.level >= 160)
+                        {
+                            {
+                                foreach (Monster item in list)
+                                {
+                                    __instance.SetupInfinityArenaMonsterShift(item);
+                                }
+
+                                __result = list;
+                                return false;
+                            }
+                        }
+
+                        if (encounter.PredefinedMonsters.level >= 130)
+                        {
+                            int num3 = UnityEngine.Random.Range(0, 3);
+                            for (int j = 0; j < 3; j++)
+                            {
+                                if (j != num3)
+                                {
+                                    __instance.SetupInfinityArenaMonsterShift(list[j]);
+                                }
+                            }
+                        }
+                        else if (encounter.PredefinedMonsters.level >= 70)
+                        {
+                            int index2 = UnityEngine.Random.Range(0, 3);
+                            __instance.SetupInfinityArenaMonsterShift(list[index2]);
+                        }
+                    }
+                }
+
+                __result = list;
                 return false;
             }
         }

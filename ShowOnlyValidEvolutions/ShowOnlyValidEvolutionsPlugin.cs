@@ -14,7 +14,7 @@ namespace garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions";
         public const string ModName = "Show Only Valid Evolutions";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -102,11 +102,7 @@ namespace garfieldbanks.MonsterSanctuary.ShowOnlyValidEvolutions
 
                     menuListItem.GetComponent<MonsterSelectorView>().ShowMonster(monster);
 
-                    AccessTools.Method(typeof(MonsterSelector), "UpdateDisabledStatus")
-                        .Invoke(__instance, new object[]
-                        {
-                            menuListItem.GetComponent<MonsterSelectorView>()
-                        });
+                    __instance.UpdateDisabledStatus(menuListItem.GetComponent<MonsterSelectorView>());
                 }
 
                 return false;

@@ -17,7 +17,7 @@ namespace garfieldbanks.MonsterSanctuary.GetAllArmyRewards
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.GetAllArmyRewards";
         public const string ModName = "Get All Army Rewards";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;
@@ -53,14 +53,14 @@ namespace garfieldbanks.MonsterSanctuary.GetAllArmyRewards
             Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
-        private static int GetPointsRequired(MonsterArmyMenu instance)
+        private static int GetPointsRequired(ref MonsterArmyMenu __instance)
         {
-            return (int)AccessTools.Method(typeof(MonsterArmyMenu), "GetPointsRequired").Invoke(instance, null);
+            return __instance.GetPointsRequired();
         }
 
-        private static RewardData GetCurrentReward(MonsterArmyMenu instance)
+        private static RewardData GetCurrentReward(ref MonsterArmyMenu __instance)
         {
-            return (RewardData)AccessTools.Method(typeof(MonsterArmyMenu), "GetCurrentReward").Invoke(instance, null);
+            return __instance.GetCurrentReward();
         }
 
         private static void DisplayRewards()
@@ -87,7 +87,7 @@ namespace garfieldbanks.MonsterSanctuary.GetAllArmyRewards
             {
                 _isEggDonation = false;
 
-                AccessTools.Method(typeof(MonsterArmyMenu), "ConfirmDonateEggReward").Invoke(_monsterArmyMenu, null);
+                _monsterArmyMenu.ConfirmDonateEgg();
             }
         }
 
@@ -110,13 +110,13 @@ namespace garfieldbanks.MonsterSanctuary.GetAllArmyRewards
 
                 __instance.MenuList.SetLocked(true);
 
-                while (___armyStrength >= GetPointsRequired(__instance))
+                while (___armyStrength >= GetPointsRequired(ref __instance))
                 {
-                    lastReachedGoal = GetPointsRequired(__instance);
+                    lastReachedGoal = GetPointsRequired(ref __instance);
 
                     _log.LogDebug($"Unlocked rewards for {lastReachedGoal} points.");
 
-                    rewardData.Add(GetCurrentReward(__instance));
+                    rewardData.Add(GetCurrentReward(ref __instance));
 
                     ++ProgressManager.Instance.MonsterArmyRewardsClaimed;
                 }

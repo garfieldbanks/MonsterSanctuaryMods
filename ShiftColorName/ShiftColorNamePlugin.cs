@@ -15,7 +15,7 @@ namespace garfieldbanks.MonsterSanctuary.ShiftColorName
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.ShiftColorName";
         public const string ModName = "Shift Color Name";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;

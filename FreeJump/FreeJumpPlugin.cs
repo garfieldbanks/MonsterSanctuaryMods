@@ -1,10 +1,8 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using BepInEx.Logging;
 using garfieldbanks.MonsterSanctuary.ModsMenu;
 using HarmonyLib;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace garfieldbanks.MonsterSanctuary.FreeJump
 {
@@ -14,7 +12,7 @@ namespace garfieldbanks.MonsterSanctuary.FreeJump
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.FreeJump";
         public const string ModName = "Free Jump";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;

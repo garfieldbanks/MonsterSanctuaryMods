@@ -15,7 +15,7 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.LevelCaps";
         public const string ModName = "Level Caps";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private static int _defaultMaxLevel;
 
@@ -198,8 +198,7 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
                     newValue = PlayerController.Instance.Monsters.GetHighestLevel();
                 }
 
-                AccessTools.PropertySetter(typeof(ChampionSummary), "LevelValue")
-                    .Invoke(__instance, new object[] { newValue });
+                __instance.LevelValue = newValue;
                 __instance.Level.text = $"{Utils.LOCA("Lvl")} {__instance.LevelValue}";
 
                 _log.LogDebug($"Changed Champion level: {originalValue} -> {__instance.LevelValue}");

@@ -13,7 +13,7 @@ namespace garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.HatchMaxLevelEggs";
         public const string ModName = "Hatch Max Level Eggs";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;

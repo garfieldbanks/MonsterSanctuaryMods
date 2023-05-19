@@ -15,7 +15,7 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.NewGamePlusMonsterArmy";
         public const string ModName = "NG+ Monster Army";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;

@@ -5,22 +5,12 @@ using garfieldbanks.MonsterSanctuary.ModsMenu;
 using garfieldbanks.MonsterSanctuary.ModsMenu.Extensions;
 using HarmonyLib;
 using JetBrains.Annotations;
-using MonoMod.RuntimeDetour;
-using MonoMod.Utils;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
+using System.Reflection.Emit;
 using System.Threading;
-using System.Timers;
-using System.Xml;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using static MonoMod.Cil.RuntimeILReferenceBag.FastDelegateInvokers;
-using static PhysicalObject;
-using static UnityEngine.ParticleSystem;
 
 namespace garfieldbanks.MonsterSanctuary.MyTweaks
 {
@@ -30,7 +20,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.MyTweaks";
         public const string ModName = "My Tweaks";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const int KeeperRankMod = 0;
         private static ConfigEntry<int> _keeperRankMod;
@@ -375,7 +365,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private class NPCKeeperMonsterGetEquipmentPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(NPCKeeperMonster __instance, ref Equipment __result, ref GameObject equipGO, ref MonsterEncounter encounter, ref Equipment originalEquipment)
+            private static bool Prefix(ref NPCKeeperMonster __instance, ref Equipment __result, ref GameObject equipGO, ref MonsterEncounter encounter, ref Equipment originalEquipment)
             {
                 Equipment equipment = equipGO.GetComponent<Equipment>();
                 if (originalEquipment != null)
@@ -449,7 +439,21 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 if (__result <= 0)
                 {
                     __result = 1;
-                }    
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(MonsterMenu), "OnItemSelected")]
+        private class MonsterMenuOnItemSelectedPatch
+        {
+            [UsedImplicitly]
+            private static void Prefix(ref MonsterMenu __instance, ref MenuListItem item)
+            {
+                if (item == __instance.MenuItemStatus)
+                {
+                    Monster monster = __instance.Monster.GetMonster();
+                    monster.ExpNeeded = Monster.CalculateNeededExperience(monster.Level);
+                }
             }
         }
 
@@ -457,12 +461,13 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private class MonsterAddExpPatch
         {
             [UsedImplicitly]
-            private static void Prefix(ref int expAmount)
+            private static void Prefix(ref Monster __instance, ref int expAmount)
             {
                 if (_expMultiplier.Value == 0)
                 {
                     expAmount = 0;
                 }
+                __instance.ExpNeeded = Monster.CalculateNeededExperience(__instance.Level);
             }
         }
 
@@ -470,7 +475,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private class UpgradeMenuConfirmedUpgradePopupPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(UpgradeMenu __instance, ref int index)
+            private static bool Prefix(ref UpgradeMenu __instance, ref int index)
             {
                 __instance.ItemList.SetLocked(locked: false);
                 if (index != 0)
@@ -512,11 +517,9 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     PlayerController.Instance.Inventory.RemoveItem(upgradeMaterial.Item.GetComponent<BaseItem>(), upgradeMaterial.Quantity);
                 }
                 SFXController.Instance.PlaySFX(SFXController.Instance.SFXBlacksmithing);
-                MethodInfo UpdateMenuList = __instance.GetType().GetMethod("UpdateMenuList", BindingFlags.NonPublic | BindingFlags.Instance);
-                UpdateMenuList.Invoke(__instance, new object[] { });
+                __instance.UpdateMenuList();
                 __instance.PagedItemList.ValidateCurrentSelected();
-                MethodInfo OnItemHovered = __instance.GetType().GetMethod("OnItemHovered", BindingFlags.NonPublic | BindingFlags.Instance);
-                OnItemHovered.Invoke(__instance, new object[] { __instance.ItemList.CurrentSelected });
+                __instance.OnItemHovered(__instance.ItemList.CurrentSelected);
                 AchievementsManager.Instance.OnEquipmentUpgraded();
                 return false;
             }
@@ -578,12 +581,9 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 }
 
                 AnimElement.PlayAnimElement(__instance.Anim, PlayerController.Instance.PlayerPosition, flipHorizontal: false, flipVertical: false);
-                FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
-                finishedCast.SetValue(__instance, false);
-                FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
-                transformed.SetValue(__instance, false);
-                FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
-                dTimeAcc.SetValue(__instance, 0f);
+                __instance.finishedCast = false;
+                __instance.transformed = false;
+                __instance.dTimeAcc = 0f;
                 //GameStateManager.Instance.StartCinematic(__instance);
                 PlayerController.Instance.Physics.IsLifted = true;
                 PlayerController.Instance.Physics.Velocity = Vector2.zero;
@@ -603,13 +603,10 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     return true;
                 }
 
-                FieldInfo finishedCast = __instance.GetType().GetField("finishedCast", BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldInfo transformed = __instance.GetType().GetField("transformed", BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldInfo dTimeAcc = __instance.GetType().GetField("dTimeAcc", BindingFlags.NonPublic | BindingFlags.Instance);
-                dTimeAcc.SetValue(__instance, (float)dTimeAcc.GetValue(__instance) + Time.deltaTime);
-                if ((float)dTimeAcc.GetValue(__instance) > __instance.BlobTransformTimer && !(bool)transformed.GetValue(__instance))
+                __instance.dTimeAcc = __instance.dTimeAcc + Time.deltaTime;
+                if (__instance.dTimeAcc > __instance.BlobTransformTimer && !__instance.transformed)
                 {
-                    transformed.SetValue(__instance, true);
+                    __instance.transformed = true;
                     if (PlayerController.Instance.BlobForm)
                     {
                         __instance.TransformBack();
@@ -624,9 +621,9 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     }
                 }
 
-                if ((float)dTimeAcc.GetValue(__instance) > __instance.CastDuration && !(bool)finishedCast.GetValue(__instance))
+                if (__instance.dTimeAcc > __instance.CastDuration && !__instance.finishedCast)
                 {
-                    finishedCast.SetValue(__instance, true);
+                    __instance.finishedCast = true;
                 }
                 return false;
             }
@@ -741,31 +738,27 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     }
                 }
 
-                FieldInfo monster = __instance.GetType().GetField("monster", BindingFlags.NonPublic | BindingFlags.Instance);
-                int actualLevel = ((Monster)monster.GetValue(__instance)).Level;
-                ((Monster)monster.GetValue(__instance)).Level = 99;
+                int actualLevel = __instance.monster.Level;
+                __instance.monster.Level = 99;
 
-                MethodInfo LearnPassiveFromSavegame = __instance.GetType().GetMethod("LearnPassiveFromSavegame", BindingFlags.NonPublic | BindingFlags.Instance);
                 foreach (PassiveSkillEntry passife in passives)
                 {
-                    LearnPassiveFromSavegame.Invoke(__instance, new object[] { passife });
+                    __instance.LearnPassiveFromSavegame(passife);
                 }
 
-                MethodInfo LearnActiveFromSavegame = __instance.GetType().GetMethod("LearnActiveFromSavegame", BindingFlags.NonPublic | BindingFlags.Instance);
                 foreach (int action2 in actions)
                 {
-                    LearnActiveFromSavegame.Invoke(__instance, new object[] { __instance.Actions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(action2) });
+                    __instance.LearnActiveFromSavegame(__instance.Actions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(action2));
                 }
 
                 foreach (int parentAction in parentActions)
                 {
-                    LearnActiveFromSavegame.Invoke(__instance, new object[] { __instance.ParentActions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(parentAction) });
+                    __instance.LearnActiveFromSavegame(__instance.ParentActions, GameController.Instance.WorldData.GetReferenceable<BaseAction>(parentAction));
                 }
 
-                MethodInfo ValidateSkillTree = __instance.GetType().GetMethod("ValidateSkillTree", BindingFlags.NonPublic | BindingFlags.Instance);
-                ValidateSkillTree.Invoke(__instance, new object[] { });
+                __instance.ValidateSkillTree();
 
-                ((Monster)monster.GetValue(__instance)).Level = actualLevel;
+                __instance.monster.Level = actualLevel;
 
                 return false;
             }
@@ -983,42 +976,36 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     return true;
                 }
 
-                FieldInfo CurrentSelected = __instance.GetType().GetField("CurrentSelected", BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldInfo monster = __instance.GetType().GetField("monster", BindingFlags.NonPublic | BindingFlags.Instance);
-                if ((ISelectionViewSelectable)CurrentSelected.GetValue(__instance) is SkillTreeIcon)
+                if ((ISelectionViewSelectable)__instance.CurrentSelected is SkillTreeIcon)
                 {
-                    SkillTreeIcon skillTreeIcon = (SkillTreeIcon)CurrentSelected.GetValue(__instance);
+                    SkillTreeIcon skillTreeIcon = (SkillTreeIcon)__instance.CurrentSelected;
                     if (skillTreeIcon.Skill.Skill == null)
                     {
                         GameController.Instance.SFX.PlaySFX(GameController.Instance.SFX.SFXMenuCancel);
                     }
                     else if (skillTreeIcon.Skill.Learned)
                     {
-                        ((Monster)monster.GetValue(__instance)).SkillManager.UnlearnSkill(skillTreeIcon.Skill);
-                        ((SkillTreeIcon)CurrentSelected.GetValue(__instance)).UpdateColor();
-                        ((Monster)monster.GetValue(__instance)).CalculateCurrentStats();
-                        MethodInfo UpdateSkillpoints = __instance.GetType().GetMethod("UpdateSkillpoints", BindingFlags.NonPublic | BindingFlags.Instance);
-                        UpdateSkillpoints.Invoke(__instance, new object[] { });
-                        MethodInfo UpdateStats = __instance.GetType().GetMethod("UpdateStats", BindingFlags.NonPublic | BindingFlags.Instance);
-                        UpdateStats.Invoke(__instance, new object[] { });
+                        __instance.monster.SkillManager.UnlearnSkill(skillTreeIcon.Skill);
+                        ((SkillTreeIcon)__instance.CurrentSelected).UpdateColor();
+                        __instance.monster.CalculateCurrentStats();
+                        __instance.UpdateSkillpoints();
+                        __instance.UpdateStats();
                     }
                     else
                     {
-                        MethodInfo LearnSkill = __instance.GetType().GetMethod("LearnSkill", BindingFlags.NonPublic | BindingFlags.Instance);
-                        LearnSkill.Invoke(__instance, new object[] { });
+                        __instance.LearnSkill();
                     }
                 }
-                else if ((ISelectionViewSelectable)CurrentSelected.GetValue(__instance) is UltimateIcon)
+                else if ((ISelectionViewSelectable)__instance.CurrentSelected is UltimateIcon)
                 {
-                    ((Monster)monster.GetValue(__instance)).SkillManager.SetUltimate(((UltimateIcon)CurrentSelected.GetValue(__instance)).Skill.gameObject);
+                    __instance.monster.SkillManager.SetUltimate(((UltimateIcon)__instance.CurrentSelected).Skill.gameObject);
                     foreach (UltimateIcon ultimate in __instance.Ultimates)
                     {
                         ultimate.SetSelected(isSelected: false);
                     }
-                    ((UltimateIcon)CurrentSelected.GetValue(__instance)).SetSelected(isSelected: true);
+                    ((UltimateIcon)__instance.CurrentSelected).SetSelected(isSelected: true);
                 }
-                MethodInfo ValidateSkillTree = ((Monster)monster.GetValue(__instance)).SkillManager.GetType().GetMethod("ValidateSkillTree", BindingFlags.NonPublic | BindingFlags.Instance);
-                ValidateSkillTree.Invoke(((Monster)monster.GetValue(__instance)).SkillManager, new object[] { });
+                __instance.monster.SkillManager.ValidateSkillTree();
                 return false;
             }
         }
@@ -1059,7 +1046,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private class InventoryManagerRemoveItemPatch
         {
             [UsedImplicitly]
-            private static bool Prefix(InventoryManager __instance, ref BaseItem item)
+            private static bool Prefix(ref InventoryManager __instance, ref BaseItem item)
             {
                 if (!_unlimitedItemUse.Value || UpgradeMenuConfirmedMenuPopupTemp || (item != null && item.GetName() == "Wooden Stick"))
                 {
@@ -1084,11 +1071,9 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 if (__instance.BoolSwitchName != null && __instance.BoolSwitchName != "UWW3SlidingGate" && __instance.BoolSwitchName != "UWW4SlidingGate")
                 {
                     __instance.IsOpenInitially = true;
-                    FieldInfo IsOpen = __instance.GetType().GetField("IsOpen", BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (IsOpen == null || !(bool)IsOpen.GetValue(__instance))
+                    if (!__instance.IsOpen)
                     {
-                        MethodInfo UpdateState = __instance.GetType().GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
-                        UpdateState.Invoke(__instance, new object[] { true });
+                        __instance.UpdateState(true);
                     }
                     if (__instance.BoolSwitchName != "HBC2RotatingGate")
                     {
@@ -1113,11 +1098,9 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
 
                 if (__instance.BoolSwitchName != null && __instance.BoolSwitchName != "UWW3SlidingGate" && __instance.BoolSwitchName != "UWW4SlidingGate")
                 {
-                    FieldInfo IsOpen = __instance.GetType().GetField("IsOpen", BindingFlags.NonPublic | BindingFlags.Instance);
-                    if (IsOpen == null || !(bool)IsOpen.GetValue(__instance))
+                    if (!__instance.IsOpen)
                     {
-                        MethodInfo UpdateState = __instance.GetType().GetMethod("UpdateState", BindingFlags.NonPublic | BindingFlags.Instance);
-                        UpdateState.Invoke(__instance, new object[] { true });
+                        __instance.UpdateState(true);
                     }
                     if (__instance.BoolSwitchName != "HBC2RotatingGate")
                     {
@@ -1238,8 +1221,14 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     return;
                 }
 
-                MethodInfo Disappear = __instance.GetType().GetMethod("Disappear", BindingFlags.NonPublic | BindingFlags.Instance);
-                Disappear.Invoke(__instance, new object[] { });
+                try
+                {
+                    __instance.Disappear();
+                }
+                catch
+                {
+
+                }
             }
         }
 

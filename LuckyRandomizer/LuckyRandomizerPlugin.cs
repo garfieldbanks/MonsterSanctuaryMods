@@ -21,7 +21,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.LuckyRandomizer";
         public const string ModName = "Lucky Randomizer";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private static readonly System.Random Rand = new();
         private static ManualLogSource _log;
@@ -524,14 +524,13 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     }
                 }
 
-                FieldInfo relicModeRelic = __instance.GetType().GetField("relicModeRelic", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (__instance.Item == null && __instance.Gold == 0)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Item is null and has no gold");
                 }
-                else if (_notRelicChests.Value && ((Equipment)relicModeRelic.GetValue(__instance)) != null)
+                else if (_notRelicChests.Value && __instance.relicModeRelic != null)
                 {
-                    _log.LogDebug("ChestRandomizer ignore: Relic chest");
+                            _log.LogDebug("ChestRandomizer ignore: Relic chest");
                 }
                 else if (__instance.BraveryChest)
                 {
@@ -856,18 +855,9 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     return true;
                 }
 
-                FieldInfo combatUiFI = __instance.GetType().GetField("combatUi", BindingFlags.NonPublic | BindingFlags.Instance);
-                CombatUIController combatUi = combatUiFI.GetValue(__instance) as CombatUIController;
-                MethodInfo CheckEggReplacement = __instance.GetType().GetMethod("CheckEggReplacement", BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldInfo commonRewardsFI = __instance.GetType().GetField("commonRewards", BindingFlags.NonPublic | BindingFlags.Instance);
-                FieldInfo rareRewardsFI = __instance.GetType().GetField("rareRewards", BindingFlags.NonPublic | BindingFlags.Instance);
-                List<InventoryItem> commonRewards = commonRewardsFI.GetValue(__instance) as List<InventoryItem>;
-                List<InventoryItem> rareRewards = rareRewardsFI.GetValue(__instance) as List<InventoryItem>;
-                MethodInfo ShowNewRecordReward = __instance.GetType().GetMethod("ShowNewRecordReward", BindingFlags.NonPublic | BindingFlags.Instance);
-                MethodInfo GetRandomReward = __instance.GetType().GetMethod("GetRandomReward", BindingFlags.NonPublic | BindingFlags.Instance);
                 if (__instance.CurrentEncounter.EncounterType == EEncounterType.InfinityArena)
                 {
-                    combatUi.ResultScreen.Close();
+                    __instance.combatUi.ResultScreen.Close();
                     return false;
                 }
                 CombatControllerGold = 0;
@@ -882,9 +872,9 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     {
                         if (i >= bestChampionScore)
                         {
-                            //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion.RewardsCommon[i], 0 }))
+                            //if (__instance.CheckEggReplacement(champion.RewardsCommon[i], ref CombatControllerGold))
                             //{
-                            //    __instance.AddRewardItem(commonRewards, champion.RewardsCommon[i].GetComponent<BaseItem>());
+                            //    __instance.AddRewardItem(__instance.commonRewards, champion.RewardsCommon[i].GetComponent<BaseItem>());
                             //}
                             //ProgressManager.Instance.ReceiveItemFromMonster(champion, champion.RewardsCommon[i].GetComponent<BaseItem>());
                         }
@@ -893,9 +883,9 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     {
                         if (j >= bestChampionScore - 2)
                         {
-                            //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion.RewardsRare[j], 0 }))
+                            //if (__instance.CheckEggReplacement(champion.RewardsRare[j], ref CombatControllerGold))
                             //{
-                            //    __instance.AddRewardItem(rareRewards, champion.RewardsRare[j].GetComponent<BaseItem>());
+                            //    __instance.AddRewardItem(__instance.rareRewards, champion.RewardsRare[j].GetComponent<BaseItem>());
                             //}
                             //ProgressManager.Instance.ReceiveItemFromMonster(champion, champion.RewardsRare[j].GetComponent<BaseItem>());
                         }
@@ -903,15 +893,15 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     if (__instance.CombatResult.StarsGained == 6 && bestChampionScore < 6)
                     {
                         //PassiveChampion championPassive = champion.SkillManager.GetChampionPassive();
-                        //__instance.AddRewardItem(rareRewards, championPassive.Reward6thStar.GetComponent<BaseItem>(), championPassive.RewardQuantity);
+                        //__instance.AddRewardItem(__instance.rareRewards, championPassive.Reward6thStar.GetComponent<BaseItem>(), championPassive.RewardQuantity);
                     }
-                    if (commonRewards.Count > 0 || rareRewards.Count > 0)
+                    if (__instance.commonRewards.Count > 0 || __instance.rareRewards.Count > 0)
                     {
-                        PopupController.Instance.ShowMessage(Utils.LOCA("New Record"), Utils.LOCA("New Record score!"), (PopupController.PopupDelegate)ShowNewRecordReward.Invoke(__instance, new object[] { }));
+                        PopupController.Instance.ShowMessage(Utils.LOCA("New Record"), Utils.LOCA("New Record score!"), __instance.ShowNewRecordReward);
                     }
                     else
                     {
-                        combatUi.ResultScreen.Close();
+                        __instance.combatUi.ResultScreen.Close();
                     }
                     return false;
                 }
@@ -923,24 +913,24 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                     int num4 = Mathf.Max(0, Mathf.Min(__instance.CombatResult.StarsGained - 2, champion2.RewardsRare.Count));
                     for (int k = 0; k < num3; k++)
                     {
-                        //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion2.RewardsCommon[k], 0 }))
+                        //if (__instance.CheckEggReplacement(champion2.RewardsCommon[k], ref CombatControllerGold))
                         //{
-                        //    __instance.AddRewardItem(commonRewards, champion2.RewardsCommon[k].GetComponent<BaseItem>(), (__instance.CombatResult.StarsGained != 6) ? 1 : 2);
+                        //    __instance.AddRewardItem(__instance.commonRewards, champion2.RewardsCommon[k].GetComponent<BaseItem>(), (__instance.CombatResult.StarsGained != 6) ? 1 : 2);
                         //}
                         //ProgressManager.Instance.ReceiveItemFromMonster(champion2, champion2.RewardsCommon[k].GetComponent<BaseItem>());
                     }
                     for (int l = 0; l < num4; l++)
                     {
-                        //if ((bool)CheckEggReplacement.Invoke(__instance, new object[] { champion2.RewardsRare[l], 0 }))
+                        //if (__instance.CheckEggReplacement(champion2.RewardsRare[l], ref CombatControllerGold))
                         //{
-                        //    __instance.AddRewardItem(rareRewards, champion2.RewardsRare[l].GetComponent<BaseItem>());
+                        //    __instance.AddRewardItem(__instance.rareRewards, champion2.RewardsRare[l].GetComponent<BaseItem>());
                         //}
                         //ProgressManager.Instance.ReceiveItemFromMonster(champion2, champion2.RewardsRare[l].GetComponent<BaseItem>());
                     }
                     if (__instance.CombatResult.StarsGained == 6)
                     {
                         //PassiveChampion championPassive2 = champion2.SkillManager.GetChampionPassive();
-                        //__instance.AddRewardItem(rareRewards, championPassive2.Reward6thStar.GetComponent<BaseItem>(), championPassive2.RewardQuantity);
+                        //__instance.AddRewardItem(__instance.rareRewards, championPassive2.Reward6thStar.GetComponent<BaseItem>(), championPassive2.RewardQuantity);
                     }
                 }
                 else
@@ -955,7 +945,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                                 if (enemy.Shift != 0)
                                 {
                                     BaseItem component = enemy.RewardsRare[2].GetComponent<BaseItem>();
-                                    __instance.AddRewardItem(rareRewards, component, 1, (int)((component is Egg) ? enemy.Shift : EShift.Normal));
+                                    __instance.AddRewardItem(__instance.rareRewards, component, 1, (int)((component is Egg) ? enemy.Shift : EShift.Normal));
                                     flag = true;
                                     break;
                                 }
@@ -963,17 +953,17 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                         }
                         if (!flag)
                         {
-                            //__instance.AddRewardItem(rareRewards, (BaseItem)GetRandomReward.Invoke(__instance, new object[] { true }));
+                            //__instance.AddRewardItem(__instance.rareRewards, __instance.GetRandomReward(true));
                         }
                         if (Random.Range(0f, 1f) < __instance.CombatResult.DoubleRareLootChance && PlayerController.Instance.Monsters.Active.Count > 2)
                         {
-                            //__instance.AddRewardItem(rareRewards, (BaseItem)GetRandomReward.Invoke(__instance, new object[] { true, rareRewards[0].Item }));
+                            //__instance.AddRewardItem(__instance.rareRewards, __instance.GetRandomReward(true, __instance.rareRewards[0].Item));
                         }
                     }
                     int num5 = ((!(Random.Range(0f, 1f) < __instance.CombatResult.DoubleCommonLootChance)) ? 1 : 2);
                     for (int m = 0; m < num5; m++)
                     {
-                        //__instance.AddRewardItem(commonRewards, (BaseItem)GetRandomReward.Invoke(__instance, new object[] { false }));
+                        //__instance.AddRewardItem(__instance.commonRewards, __instance.GetRandomReward(false));
                     }
                 }
                 foreach (Monster enemy2 in __instance.Enemies)
@@ -989,12 +979,12 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
                 }
                 CombatControllerGold = Mathf.RoundToInt((float)CombatControllerGold * __instance.CombatResult.GoldBonus);
                 PlayerController.Instance.Gold += CombatControllerGold;
-                PopupController.Instance.ShowRewards(commonRewards, rareRewards, CombatControllerGold, combatUi.ResultScreen.Close);
-                rareRewards.Clear();
-                commonRewards.Clear();
+                PopupController.Instance.ShowRewards(__instance.commonRewards, __instance.rareRewards, CombatControllerGold, __instance.combatUi.ResultScreen.Close);
+                __instance.rareRewards.Clear();
+                __instance.commonRewards.Clear();
 
                 GetRandomItems(1);
-                combatUi.ResultScreen.Close();
+                __instance.combatUi.ResultScreen.Close();
 
                 return false;
             }

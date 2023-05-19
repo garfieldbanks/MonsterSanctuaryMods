@@ -13,7 +13,7 @@ namespace garfieldbanks.MonsterSanctuary.StartButtonConfirm
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.StartButtonConfirm";
         public const string ModName = "Start Button Confirm";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = true;
         private static ConfigEntry<bool> _isEnabled;

@@ -17,7 +17,7 @@ namespace garfieldbanks.MonsterSanctuary.DataDumper
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.DataDumper";
         public const string ModName = "Data Dumper";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;

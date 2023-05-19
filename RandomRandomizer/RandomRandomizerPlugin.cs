@@ -20,7 +20,7 @@ namespace garfieldbanks.MonsterSanctuary.RandomRandomizer
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.RandomRandomizer";
         public const string ModName = "Random Randomizer";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private static readonly System.Random Rand = new();
         private static ManualLogSource _log;
@@ -233,9 +233,9 @@ namespace garfieldbanks.MonsterSanctuary.RandomRandomizer
                     setDefaultValueFunc: () => _tier5LevelUnlock.Value = Tier5LevelUnlockDefault);
             };
 
-            new Harmony(PluginInfo.PLUGIN_GUID).PatchAll();
+            new Harmony(ModGUID).PatchAll();
 
-            Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
+            Logger.LogInfo($"Plugin {ModGUID} is loaded!");
         }
 
         private static GameObject GetValidDrop()
@@ -375,8 +375,7 @@ namespace garfieldbanks.MonsterSanctuary.RandomRandomizer
                 //    _log.LogDebug($"Current scene: {PlayerController.Instance.Minimap.CurrentEntry.MapData.SceneName}");
                 //}
 
-                FieldInfo relicModeRelic = __instance.GetType().GetField("relicModeRelic", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (((Equipment)relicModeRelic.GetValue(__instance)) != null)
+                if (__instance.relicModeRelic != null)
                 {
                     _log.LogDebug("ChestRandomizer ignore: Relic chest");
 

@@ -14,10 +14,12 @@ namespace garfieldbanks.MonsterSanctuary.Fly
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.Fly";
         public const string ModName = "Fly";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
+
+        private static ManualLogSource _log;
 
         [UsedImplicitly]
         private void Awake()

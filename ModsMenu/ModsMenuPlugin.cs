@@ -18,7 +18,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
     {
         public const string ModGUID = "garfieldbanks.MonsterSanctuary.ModsMenu";
         public const string ModName = "Mods Menu";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "3.0.0";
 
         private static ManualLogSource _log;
 
@@ -32,12 +32,6 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
         private const int MaximumOptionsPerPage = 8;
 
         private static int _currentPageIndex;
-
-        private static readonly MethodInfo AddOptionMethod = AccessTools.Method(typeof(OptionsMenu), "AddOption");
-        private static readonly MethodInfo CheckMouseMenuSwitchMethod = AccessTools.Method(typeof(OptionsMenu), "CheckMouseMenuSwitch");
-        private static readonly MethodInfo ClearOptionsMethod = AccessTools.Method(typeof(OptionsMenu), "ClearOptions");
-        private static readonly MethodInfo OpenOptionPopupMethod = AccessTools.Method(typeof(OptionsMenu), "OpenOptionPopup");
-        private static readonly MethodInfo RefreshPageMethod = AccessTools.Method(typeof(OptionsMenu), "RefreshPage");
 
         [UsedImplicitly]
         private void Awake()
@@ -131,7 +125,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
                 ? Math.Max(0, _currentPageIndex - 1)
                 : Math.Min((int)Math.Floor((decimal)OptionsMenuHelper.CustomMenuOptions.Count / MaximumOptionsPerPage), _currentPageIndex + 1);
 
-            RefreshPageMethod.Invoke(_optionsMenu, null);
+            _optionsMenu.RefreshPage();
         }
 
         [HarmonyPatch(typeof(OptionsMenu), "Start")]
@@ -177,7 +171,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
                     return true;
                 }
 
-                ClearOptionsMethod.Invoke(__instance, null);
+                __instance.ClearOptions();
                 ___optionCounter = 0;
 
                 var optionsToDisplay =
@@ -187,13 +181,12 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
 
                 foreach (var option in optionsToDisplay)
                 {
-                    var newOption = (MenuListItem)AddOptionMethod.Invoke(__instance, new object[]
-                    {
+                    var newOption = __instance.AddOption(
                         option.Key,
                         $"[{Utils.LOCA(option.ModName)}] {Utils.LOCA(option.Name)}",
                         option.DisplayValueFunc.Invoke(),
                         option.OnValueChangeFunc != null
-                    });
+                    );
 
                     var isDisabled = ___ingameMenu && option.DisabledInGameMenu ||
                                      option.DetermineDisabledFunc != null && option.DetermineDisabledFunc.Invoke();
@@ -268,13 +261,12 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
 
                 var options = customOption.PossibleValuesFunc.Invoke().ToList();
 
-                OpenOptionPopupMethod.Invoke(__instance, new object[]
-                {
+                __instance.OpenOptionPopup(
                     options,
                     Utils.LOCA(customOption.Name),
                     options.FindIndex(x => x == customOption.DisplayValueFunc.Invoke()).Clamp(0, options.Count),
                     null
-                });
+                );
 
                 return false;
             }
@@ -381,7 +373,7 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
                     option.SetDefaultValueFunc.Invoke();
                 }
 
-                RefreshPageMethod.Invoke(__instance, null);
+                __instance.RefreshPage();
 
                 return false;
             }
@@ -441,30 +433,26 @@ namespace garfieldbanks.MonsterSanctuary.ModsMenu
                     return true;
                 }
 
-                CheckMouseMenuSwitchMethod.Invoke(__instance, new object[]
-                {
+                __instance.CheckMouseMenuSwitch(
                     __instance.CategoryMenu,
                     __instance.FooterMenu,
                     __instance.BaseOptions
-                });
-                CheckMouseMenuSwitchMethod.Invoke(__instance, new object[]
-                {
+                );
+                __instance.CheckMouseMenuSwitch(
                     __instance.FooterMenu,
                     __instance.CategoryMenu,
                     _modsPagination
-                });
-                CheckMouseMenuSwitchMethod.Invoke(__instance, new object[]
-                {
+                );
+                __instance.CheckMouseMenuSwitch(
                     __instance.BaseOptions,
                     _modsPagination,
                     __instance.CategoryMenu
-                });
-                CheckMouseMenuSwitchMethod.Invoke(__instance, new object[]
-                {
+                );
+                __instance.CheckMouseMenuSwitch(
                     _modsPagination,
                     __instance.FooterMenu,
                     __instance.BaseOptions
-                });
+                );
 
                 if (!__instance.BaseOptions.IsSelecting)
                 {
