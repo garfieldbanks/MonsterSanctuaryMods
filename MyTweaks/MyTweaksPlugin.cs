@@ -686,20 +686,24 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Prefix(ref Monster monster)
             {
-                int skillCounter = 0;
-                foreach (SkillTree skillTree in monster.SkillManager.SkillTrees)
+                static bool HasLearnedAllSkills(ref Monster monster)
                 {
-                    for (int j = 4; j >= 0; j--)
+                    foreach (SkillTree skillTree in monster.SkillManager.SkillTrees)
                     {
-                        skillCounter += skillTree.GetSkillsByTier(j).Count;
+                        for (int j = 4; j >= 0; j--)
+                        {
+                            foreach (SkillTreeEntry item in skillTree.GetSkillsByTier(j))
+                            {
+                                if (!item.Learned)
+                                {
+                                    return false;
+                                }
+                            }
+                        }
                     }
+                    return true;
                 }
-                int maxSkillCount = monster.Level + 1;
-                if (monster.SkillManager.UsedSkillPotion)
-                {
-                    maxSkillCount++;
-                }
-                if (maxSkillCount > skillCounter)
+                if (HasLearnedAllSkills(ref monster))
                 {
                     MonsterSummarySetMonsterTemp = monster.SkillManager.SkillPoints;
                     monster.SkillManager.SkillPoints = 0;
