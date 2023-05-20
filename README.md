@@ -43,7 +43,7 @@ DLL plugins for [Monster Sanctuary](https://www.google.com/search?q=monster+sanc
 
 ### [GBLC]
 #### Level Caps
-- Custom level cap for your monsters and enemies.
+- Custom level cap for your monsters and enemies. Changing this while in-game can cause crashes. Best to save & exit, change the value, and then reload.
 #### Enemy Lvl Match Player Lvl
 - Sets enemy monster level to the highest monster level of the player.
 
