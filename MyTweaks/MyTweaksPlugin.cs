@@ -465,7 +465,59 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                 {
                     expAmount = 0;
                 }
+
                 __instance.ExpNeeded = Monster.CalculateNeededExperience(__instance.Level);
+
+                if (GameController.LevelCap == __instance.Level)
+                {
+                    expAmount = 0;
+                    __instance.ExpNeeded = 1;
+                    __instance.CurrentExp = 0;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(ExpScreen), "StartExpScreen")]
+        private class ExpScreenStartExpScreenPatch
+        {
+            [UsedImplicitly]
+            private static bool Prefix(ref ExpScreen __instance)
+            {
+                __instance.BadgesGained = 0;
+                __instance.gameObject.SetActive(value: true);
+                UIController.Instance.ShadeLayer.Show(__instance.gameObject);
+                __instance.state.SetState(ExpScreen.States.OpeningAnim);
+                __instance.OpeningAnim.Open();
+                __instance.expReward = 0;
+                __instance.expAlreadyGranted = 0;
+                foreach (Monster enemy in GameController.Instance.Combat.Enemies)
+                {
+                    __instance.expReward += enemy.GetExpReward();
+                }
+                foreach (Monster deadEnemy in GameController.Instance.Combat.DeadEnemies)
+                {
+                    __instance.expReward += deadEnemy.GetExpReward();
+                }
+                for (int i = 0; i < __instance.ExpSummaries.Count; i++)
+                {
+                    __instance.ExpSummaries[i].SetMonster(PlayerController.Instance.Monsters.GetActiveMonster(i));
+                }
+                bool allActiveMaxLevel = true;
+                foreach (Monster item in PlayerController.Instance.Monsters.Active)
+                {
+                    if (item.Level != GameController.LevelCap)
+                    {
+                        allActiveMaxLevel = false;
+                    }
+                    item.SkillManager.ClearRecentlyLearnedSkills();
+                }
+                ProgressManager.Instance.AddExpMonsterArmy(__instance.expReward);
+                if (allActiveMaxLevel)
+                {
+                    __instance.expReward = 0;
+                }
+                __instance.HeaderText.text = Utils.LOCA("Exp reward") + ": " + __instance.expReward;
+                return false;
             }
         }
 
@@ -686,6 +738,10 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static void Prefix(ref Monster monster)
             {
+                if (monster == null)
+                {
+                    return;
+                }
                 static bool HasLearnedAllSkills(ref Monster monster)
                 {
                     foreach (SkillTree skillTree in monster.SkillManager.SkillTrees)
