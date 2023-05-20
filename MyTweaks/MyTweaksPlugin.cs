@@ -79,6 +79,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private static bool SkillMenuSelectMonsterTemp;
         private static bool CombatControllerSetupKeeperBattleEnemiesTemp;
         private static bool UpgradeMenuConfirmedMenuPopupTemp = false;
+        private static int MonsterSummarySetMonsterTemp = -999;
 
         [UsedImplicitly]
         private void Awake()
@@ -676,6 +677,43 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
                     return false;
                 }
                 return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(MonsterSummary), "SetMonster")]
+        private class MonsterSummarySetMonsterPatch
+        {
+            [UsedImplicitly]
+            private static void Prefix(ref Monster monster)
+            {
+                int skillCounter = 0;
+                foreach (SkillTree skillTree in monster.SkillManager.SkillTrees)
+                {
+                    for (int j = 4; j >= 0; j--)
+                    {
+                        skillCounter += skillTree.GetSkillsByTier(j).Count;
+                    }
+                }
+                int maxSkillCount = monster.Level + 1;
+                if (monster.SkillManager.UsedSkillPotion)
+                {
+                    maxSkillCount++;
+                }
+                if (maxSkillCount > skillCounter)
+                {
+                    MonsterSummarySetMonsterTemp = monster.SkillManager.SkillPoints;
+                    monster.SkillManager.SkillPoints = 0;
+                }
+            }
+
+            [UsedImplicitly]
+            private static void Postfix(ref Monster monster)
+            {
+                if (MonsterSummarySetMonsterTemp != -999)
+                {
+                    monster.SkillManager.SkillPoints = MonsterSummarySetMonsterTemp;
+                    MonsterSummarySetMonsterTemp = -999;
+                }
             }
         }
 
