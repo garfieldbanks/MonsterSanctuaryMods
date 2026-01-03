@@ -1143,6 +1143,11 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             [UsedImplicitly]
             private static bool Prefix(ref InventoryManager __instance, ref BaseItem item)
             {
+                if (!item)
+                {
+                    return false;
+                }
+    
                 if (!_unlimitedItemUse.Value || UpgradeMenuConfirmedMenuPopupTemp || (item != null && item.GetName() == "Wooden Stick"))
                 {
                     return true;
@@ -1477,3 +1482,4 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         }
     }
 }
+
