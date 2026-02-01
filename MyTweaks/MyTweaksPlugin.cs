@@ -777,6 +777,21 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        [HarmonyPatch(typeof(SkillManager), "ResetSkills")]
+        private class SkillManagerResetSkills
+        {
+            [UsedImplicitly]
+            private static bool Prefix()
+            {
+                if (!_skillsTweaks.Value)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
         [HarmonyPatch(typeof(Monster), "CheckMonsterValidity")]
         private class MonsterCheckMonsterValidityPatch
         {
