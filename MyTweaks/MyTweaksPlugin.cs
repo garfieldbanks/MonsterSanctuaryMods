@@ -79,6 +79,7 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
         private static bool SkillMenuSelectMonsterTemp;
         private static bool CombatControllerSetupKeeperBattleEnemiesTemp;
         private static bool UpgradeMenuConfirmedMenuPopupTemp = false;
+        private static bool SkipResetSkillsTemp = false;
         private static int MonsterSummarySetMonsterTemp = -999;
 
         [UsedImplicitly]
@@ -777,13 +778,34 @@ namespace garfieldbanks.MonsterSanctuary.MyTweaks
             }
         }
 
+        [HarmonyPatch(typeof(MonsterTeamManager), "LoadTeam")]
+        private class MonsterTeamManagerLoadTeam
+        {
+            [UsedImplicitly]
+            private static void Prefix()
+            {
+                if (_skillsTweaks.Value)
+                {
+                    SkipResetSkillsTemp = true;
+                }
+            }
+            [UsedImplicitly]
+            private static void Postfix()
+            {
+                if (_skillsTweaks.Value)
+                {
+                    SkipResetSkillsTemp = false;
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(SkillManager), "ResetSkills")]
         private class SkillManagerResetSkills
         {
             [UsedImplicitly]
             private static bool Prefix()
             {
-                if (!_skillsTweaks.Value)
+                if (!_skillsTweaks.Value || !SkipResetSkillsTemp)
                 {
                     return true;
                 }
