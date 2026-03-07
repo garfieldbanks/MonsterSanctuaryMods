@@ -15,7 +15,7 @@ namespace garfieldbanks.MonsterSanctuary.StartButtonConfirm
         public const string ModName = "Start Button Confirm";
         public const string ModVersion = "3.0.0";
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
 
         [UsedImplicitly]

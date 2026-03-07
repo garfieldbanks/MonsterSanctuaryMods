@@ -19,7 +19,7 @@ namespace garfieldbanks.MonsterSanctuary.GetAllArmyRewards
         public const string ModName = "Get All Army Rewards";
         public const string ModVersion = "3.0.0";
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
 
         private static ManualLogSource _log;

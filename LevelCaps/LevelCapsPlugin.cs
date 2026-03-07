@@ -21,7 +21,7 @@ namespace garfieldbanks.MonsterSanctuary.LevelCaps
 
         private static ManualLogSource _log;
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private const bool MaxMonsterMatchPlayerDefault = true;
         private const int MaxLevelSelfDefault = 42;
         private const int MaxLevelEnemyDefault = 42;

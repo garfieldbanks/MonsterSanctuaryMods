@@ -17,7 +17,7 @@ namespace garfieldbanks.MonsterSanctuary.ShiftColorName
         public const string ModName = "Shift Color Name";
         public const string ModVersion = "3.0.0";
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
 
         // ReSharper disable once NotAccessedField.Local

@@ -26,7 +26,7 @@ namespace garfieldbanks.MonsterSanctuary.LuckyRandomizer
 
         private static List<Tuple<GameObject, int>> _possibleItemsList;
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
 
         private const bool AllowMultipleEquipmentDefault = false;

@@ -15,7 +15,7 @@ namespace garfieldbanks.MonsterSanctuary.NewGamePlusMonsterAbilities
         public const string ModName = "NG+ Monster Abilities";
         public const string ModVersion = "3.0.0";
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
 
         [UsedImplicitly]

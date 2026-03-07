@@ -19,7 +19,7 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
         public const string ModName = "NG+ Starting Options";
         public const string ModVersion = "3.0.0";
 
-        private const bool IsEnabledDefault = true;
+        private const bool IsEnabledDefault = false;
         private static ConfigEntry<bool> _isEnabled;
 
         private static SaveGameMenu _saveGameMenu;
