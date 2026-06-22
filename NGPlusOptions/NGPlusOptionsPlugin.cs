@@ -201,7 +201,7 @@ namespace garfieldbanks.MonsterSanctuary.NGPlusOptions
             [UsedImplicitly]
             private static bool Prefix(ref CombatController __instance, ref MonsterEncounter encounter, ref bool isChampion, ref List<Monster> __result)
             {
-                if (!_isEnabled.Value)
+                if (!_isEnabled.Value || !PlayerController.Instance.NewGamePlus)
                 {
                     return true;
                 }
